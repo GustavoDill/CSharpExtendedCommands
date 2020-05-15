@@ -1,131 +1,39 @@
-﻿using System;
-using System.Management;
-using System.Xml.Serialization;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Linq;
+﻿using CSharpExtendedCommands.DataTypeExtensions;
+using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
+using Microsoft.CSharp;
+using System;
+using System.CodeDom.Compiler;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Windows.Forms;
-using Timer = System.Windows.Forms.Timer;
 using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Drawing;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Collections.ObjectModel;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO.Ports;
-using System.Reflection;
-using System.CodeDom.Compiler;
-using Microsoft.CSharp;
-using System.Collections.Specialized;
-using System.Collections;
+using System.Linq;
+using System.Management;
 using System.Net;
-using System.Threading;
-using System.Xml;
-using System.Xml.Xsl;
+using System.Net.Sockets;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 using System.Xml.XPath;
-using CSharpExtendedCommands.DataTypeExtensions;
-using HtmlDocument = CSharpExtendedCommands.Web.HtmlAgilityPack.HtmlDocument;
-using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
+using System.Xml.Xsl;
 using static CSharpExtendedCommands.Converter;
-using System.IO.Compression;
+using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    //namespace IO
-    //{
-    //    public class Zip
-    //    {
-    //        public event ZipExtractSyncHandler ExtractUpdate;
-    //        public event ZipCompressSyncHandler CompressUpdate;
-    //        public event EventHandler ExtractComplete;
-    //        public event EventHandler CompressComplete;
-    //        public delegate void ZipExtractSyncHandler(int current);
-    //        public delegate void ZipCompressSyncHandler(int current, int total);
-    //        public Zip(string archive)
-    //        {
-    //            if (System.IO.File.Exists(archive))
-    //            {
-    //                Archive = ZipFile.Open(archive, ZipArchiveMode.Read);
-    //                TotalEntries = Archive.Entries.Count;
-    //            }
-    //            else
-    //            {
-    //                tmp2 = archive;
-    //            }
-    //        }
-    //        public Zip(System.IO.Stream stream)
-    //        {
-    //            Archive = new ZipArchive(stream);
-    //            TotalEntries = Archive.Entries.Count;
-    //        }
-    //        public Zip(ZipArchive archive)
-    //        {
-    //            Archive = archive;
-    //            TotalEntries = Archive.Entries.Count;
-    //        }
-    //        public void Close()
-    //        {
-    //            Archive.Dispose();
-    //        }
-    //        public int TotalEntries { get; set; }
-    //        public string CurrentFileName { get; set; }
-    //        private void Extract()
-    //        {
-    //            int extracted = 0;
-    //            foreach (ZipArchiveEntry entry in Archive.Entries)
-    //            {
-    //                CurrentFileName = entry.Name;
-    //                if (entry.Name.Contains("."))
-    //                    entry.ExtractToFile(System.IO.Path.Combine(tmp1, entry.FullName));
-    //                else
-    //                    System.IO.Directory.CreateDirectory(System.IO.Path.Combine(tmp1, entry.FullName));
-    //                extracted++;
-    //                ExtractUpdate?.Invoke(extracted);
-    //            }
-    //            ExtractComplete?.Invoke(this, EventArgs.Empty);
-    //        }
-    //        public void ExtractAsync(string directory)
-    //        {
-    //            tmp1 = directory;
-    //            new System.Threading.Thread(Extract).Start();
-    //        }
-    //        string tmp1 = "";
-    //        string tmp2 = "";
-    //        private void Compress()
-    //        {
-    //            if (System.IO.File.Exists(tmp2))
-    //                System.IO.File.Delete(tmp2);
-    //            var archive = ZipFile.Open(tmp2, ZipArchiveMode.Create);
-    //            List<System.IO.DirectoryInfo> dirs = new System.IO.DirectoryInfo(tmp1).GetAllDirectories().ToList();
-    //            dirs.Insert(0, new System.IO.DirectoryInfo(tmp1));
-    //            var files = new System.IO.DirectoryInfo(tmp1).GetAllFiles();
-    //            int total = dirs.Count + files.Length;
-    //            int current = 0;
-    //            foreach (var dir in dirs)
-    //            { CurrentFileName = dir.FullName; archive.CreateEntry(dir.FullName.Substring(new System.IO.DirectoryInfo(tmp1).Parent.FullName.Length + 1).Replace("\\", "/")); current++; CompressUpdate?.Invoke(current, total); }
-    //            foreach (var file in files)
-    //            { CurrentFileName = file.FullName; archive.CreateEntryFromFile(file.FullName, file.FullName.Substring(new System.IO.DirectoryInfo(tmp1).Parent.FullName.Length + 1).Replace("\\", "/")); current++; CompressUpdate?.Invoke(current, total); }
-    //            archive.Dispose();
-    //            CompressComplete?.Invoke(this, EventArgs.Empty);
-    //        }
-    //        public void CompressAsync(string directory, string archivePath)
-    //        {
-    //            tmp1 = directory;
-    //            tmp2 = archivePath;
-    //            new System.Threading.Thread(Compress).Start();
-    //        }
-    //        public void CompressAsync(string directory)
-    //        {
-    //            tmp1 = directory;
-    //            new System.Threading.Thread(Compress).Start();
-    //        }
-    //        public ZipArchive Archive { get; }
-    //    }
-    //}
     //namespace UI.Graphics
     //{
     //    public static partial class ManipulateObject
@@ -211,141 +119,6 @@ namespace CSharpExtendedCommands
     //            shortcut.TargetPath = ExePath;
     //            if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
     //            shortcut.Save();
-    //        }
-    //    }
-    //}
-    //namespace Code
-    //{
-    //    public static class ConvertCode
-    //    {
-    //        public static string CSharpToVB(string source)
-    //        {
-    //            return CodeConvert.CodeConvertor.ConversionLoader.ConvertCSharpToVB(source);
-    //        }
-    //        public static string VBToCSharp(string source)
-    //        {
-    //            return CodeConvert.CodeConvertor.ConversionLoader.ConvertVBToCSharp(source);
-    //        }
-    //    }
-    //}
-    //namespace UI
-    //{
-    //    public class FastColoredTextBox : FastColoredTextBoxNS.FastColoredTextBox { }
-    //}
-    //namespace Data
-    //{
-    //    public static class EmbeddedDLLs
-    //    {
-    //        public static bool CheckResolve(ResolveEventArgs args)
-    //        {
-    //            var n = args.Name;
-    //            if (n.Contains("CodeConvert"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("EnvDTE"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("EnvDTE80"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("Extensibility"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("FastColoredTextBox"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("ICSharpCode"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("CommandBars"))
-    //            {
-    //                return true;
-    //            }
-    //            if (n.Contains("stdole"))
-    //            {
-    //                return true;
-    //            }
-    //            return false;
-    //        }
-    //        public static Assembly AssemblyResolve(Assembly CSharpExtendedCommandsAssembly, ResolveEventArgs args)
-    //        {
-    //            var n = args.Name;
-    //            var CSEC = CSharpExtendedCommandsAssembly;
-    //            if (n.Contains("CodeConvert"))
-    //            {
-    //                return EmbeddedDLLs.CodeConvert(CSEC);
-    //            }
-    //            if (n.Contains("EnvDTE"))
-    //            {
-    //                return EmbeddedDLLs.EnvDTE(CSEC);
-    //            }
-    //            if (n.Contains("FastColoredTextBox"))
-    //            {
-    //                return EmbeddedDLLs.FastColoredTextBox(CSEC);
-    //            }
-    //            if (n.Contains("EnvDTE80"))
-    //            {
-    //                return EmbeddedDLLs.EnvDTE80(CSEC);
-    //            }
-    //            if (n.Contains("Extensibility"))
-    //            {
-    //                return EmbeddedDLLs.Extensibility(CSEC);
-    //            }
-    //            if (n.Contains("ICSharpCode"))
-    //            {
-    //                return EmbeddedDLLs.ICSharpCode_NRefactory(CSEC);
-    //            }
-    //            if (n.Contains("CommandBars"))
-    //            {
-    //                return EmbeddedDLLs.MicrosoftVisualStudioCommandBars(CSEC);
-    //            }
-    //            if (n.Contains("stdole"))
-    //            {
-    //                return EmbeddedDLLs.Stdole(CSEC);
-    //            }
-    //            if (n.Contains("FastColoredTextBox"))
-    //            {
-    //                return EmbeddedDLLs.FastColoredTextBox(CSEC);
-    //            }
-    //            return null;
-    //        }
-    //        private static Assembly FastColoredTextBox(Assembly CSEC_Assembly)
-    //        {
-    //            return CSharpExtendedCommands.Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.FastColoredTextBox.dll");
-    //        }
-    //        public static Assembly CodeConvert(Assembly CSEC_Assembly)
-    //        {
-    //            return CSharpExtendedCommands.Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.CodeConvert.dll");
-    //        }
-    //        public static Assembly ICSharpCode_NRefactory(Assembly CSEC_Assembly)
-    //        {
-    //            return CSharpExtendedCommands.Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.ICSharpCode.NRefactory.dll");
-    //        }
-    //        public static Assembly EnvDTE(Assembly CSEC_Assembly)
-    //        {
-    //            return Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.EnvDTE.dll");
-    //        }
-    //        public static Assembly EnvDTE80(Assembly CSEC_Assembly)
-    //        {
-    //            return Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.EnvDTE80.dll");
-    //        }
-    //        public static Assembly Extensibility(Assembly CSEC_Assembly)
-    //        {
-    //            return Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.Extensibility.dll");
-    //        }
-    //        public static Assembly MicrosoftVisualStudioCommandBars(Assembly CSEC_Assembly)
-    //        {
-    //            return Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.Microsoft.VisualStudio.CommandBars.dll");
-    //        }
-    //        public static Assembly Stdole(Assembly CSEC_Assembly)
-    //        {
-    //            return Data.Resource.LoadAssemblyFromEmbeddedResource(CSEC_Assembly, "CSharpExtendedCommands.Lib.stdole.dll");
     //        }
     //    }
     //}
@@ -11507,89 +11280,529 @@ namespace CSharpExtendedCommands
                 Private = 2
             }
         }
-        public class WebCommunicator
+        namespace Communication
         {
-            public event EventHandler<WebCommunicatorArgs> MessageReceived;
-            public event EventHandler ListeningChanged;
-            public WebCommunicator(FTPClient.FTPFile communicationFile)
+            public class TCPClient
             {
-                CommunicationFile = communicationFile;
-                updater.Interval = 1050;
-                updater.Tick += Updater_Tick;
-            }
-            private bool _h = false;
-            public bool Listening { get => _h; internal set { _h = value; if (value) updater.Start(); else updater.Stop(); ListeningChanged?.Invoke(this, EventArgs.Empty); } }
-            private bool _stopListening = true;
-            public virtual void StartListening() => Listening = true;
-            public virtual void StopListening() => Listening = false;
-            public virtual void StartListeningUntilStopped() { Listening = true; _stopListening = false; }
-            private void Updater_Tick(object sender, EventArgs e)
-            {
-                var t = new Thread(CheckMsg);
-                t.Start();
-            }
-            void CheckMsg()
-            {
-                if (Listening)
-                    if (CommunicationFile.Exists())
-                    { if (_stopListening) StopListening(); InternalGetMessage(); }
-            }
-            private void InternalGetMessage()
-            {
-                GetMessage(out string args);
-                if (args != null)
-                    MessageReceived?.Invoke(this, new WebCommunicatorArgs(args));
-            }
-            public virtual void GetMessage()
-            {
-                GetMessage(out string args);
-                MessageReceived?.Invoke(this, new WebCommunicatorArgs(args));
-            }
-            public virtual void SendMessage(string msg)
-            {
-                var t = new Thread(InternalSendMessage);
-                t.Start(msg);
-            }
-            internal virtual void InternalSendMessage(object msg)
-            {
-                var request = CommunicationFile.GetRequest();
-                request.KeepAlive = true;
-                request.UseBinary = true;
-                request.UsePassive = true;
-                request.Method = WebRequestMethods.Ftp.UploadFile;
-                using (System.IO.Stream r = request.GetRequestStream())
-                using (System.IO.StreamWriter writer = new System.IO.StreamWriter(r))
-                    writer.Write(msg.ToString());
-            }
-            public virtual void GetMessage(out string content)
-            {
-                FtpWebRequest request = Connection.CreateRequest(CommunicationFile.Path);
-                request.KeepAlive = true;
-                request.UsePassive = true;
-                request.UseBinary = true;
-                request.Method = WebRequestMethods.Ftp.DownloadFile;
-                try
+                public TCPClient(Socket clientSocket, IPAddress ip, ushort port)
                 {
-                    using (FtpWebResponse response = (FtpWebResponse)request.GetResponse()) // Error here
-                    using (System.IO.Stream responseStream = response.GetResponseStream())
-                    using (System.IO.StreamReader reader = new System.IO.StreamReader(responseStream))
-                        content = reader.ReadToEnd();
-                    CommunicationFile.Delete();
+                    ClientSocket = clientSocket;
+                    Port = port;
+                    Ip = ip;
                 }
-                catch { content = null; }
+                public TCPClient(Socket clientSocket)
+                {
+                    ClientSocket = clientSocket;
+                    try
+                    {
+                        Port = (ushort)((IPEndPoint)clientSocket.RemoteEndPoint).Port;
+                        Ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address;
+                    }
+                    catch { }
+                }
+                public TCPClient(string ip, ushort port = 0)
+                {
+                    if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
+                        Ip = IPAddress.Parse(ip);
+                    else
+                        Ip = IPAddress.Parse("127.0.0.1");
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPClient(IPAddress ip, ushort port = 0)
+                {
+                    Ip = ip;
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPClient(ushort port = 0)
+                {
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Ip = IPAddress.Parse("127.0.0.1");
+                    Setup();
+                }
+                public TCPClient(IPAddress ip)
+                {
+                    Ip = ip;
+                    Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPClient()
+                {
+                    Ip = IPAddress.Parse("127.0.0.1");
+                    Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                private void Setup()
+                {
+                    ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                }
+                public void Connect(IPAddress ip)
+                {
+                    if (!Connected)
+                        Connect(ip, Port);
+                }
+                public void Connect(string ip)
+                {
+                    if (!Connected)
+                        try { Connect(IPAddress.Parse(ip)); } catch (Exception ex) { throw ex; }
+                }
+                public void Connect(IPAddress ip, ushort port)
+                {
+                    if (!Connected)
+                    { try { ClientSocket.Connect(ip, port); } catch (Exception ex) { throw ex; } }
+                }
+                public bool Connected { get => ClientSocket.Connected; }
+                public void Connect()
+                {
+                    if (!Connected)
+                        Connect(Ip, Port);
+                }
+                public void Disconnect()
+                {
+                    if (Connected)
+                    {
+                        ClientSocket.Shutdown(SocketShutdown.Both);
+                        ClientSocket.Close();
+                    }
+                }
+                public byte[] Receive()
+                {
+                    return Receive(2048);
+                }
+                public byte[] Receive(int bufferSize)
+                {
+                    var buffer = new byte[bufferSize];
+                    int received = ClientSocket.Receive(buffer, SocketFlags.None);
+                    if (received == 0) return null;
+                    var data = new byte[received];
+                    Array.Copy(buffer, data, received);
+                    return data;
+                }
+                public string ReceiveString()
+                {
+                    return ReceiveString(2048);
+                }
+                public string ReceiveString(int bufferSize)
+                {
+                    string text = Encoding.ASCII.GetString(Receive(bufferSize));
+                    return text;
+                }
+                public int Send(byte[] buffer)
+                {
+                    return ClientSocket.Send(buffer);
+                }
+                public int Send(byte[] buffer, SocketFlags flags)
+                {
+                    return ClientSocket.Send(buffer, flags);
+                }
+                public int Send(byte[] buffer, int size, SocketFlags flags)
+                {
+                    return ClientSocket.Send(buffer, size, flags);
+                }
+                public int Send(byte[] buffer, int offset, int size, SocketFlags flags)
+                {
+                    return ClientSocket.Send(buffer, offset, size, flags);
+                }
+                public int Send(byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                {
+                    return ClientSocket.Send(buffer, offset, size, flags, out errorCode);
+                }
+                public int SendString(string text)
+                {
+                    return Send(Encoding.ASCII.GetBytes(text));
+                }
+                public void SendFile(string file)
+                {
+                    ClientSocket.SendFile(file);
+                }
+                public void SendFile(string file, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
+                {
+                    ClientSocket.SendFile(file, preBuffer, postBuffer, flags);
+                }
+                public Socket ClientSocket { get; private set; }
+                public IPAddress Ip { get; set; }
+
+                private ushort _port;
+
+                public ushort Port
+                {
+                    get { return _port; }
+                    set
+                    {
+                        if (value != 0)
+                            _port = value;
+                        else
+                            _port = _port == 0 ? ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString()) : _port;
+                    }
+                }
+
             }
-            Timer updater = new Timer();
-            public FTPClient Connection { get => CommunicationFile.Client; }
-            public FTPClient.FTPFile CommunicationFile { get; }
-        }
-        public class WebCommunicatorArgs : EventArgs
-        {
-            public WebCommunicatorArgs() { }
-            public WebCommunicatorArgs(string args)
+            public class TCPServer
             {
-                Message = args;
+                public TCPServer(string ip, ushort port = 0)
+                {
+                    if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
+                        Ip = IPAddress.Parse(ip);
+                    else
+                        Ip = IPAddress.Parse("127.0.0.1");
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPServer(IPAddress ip, ushort port = 0)
+                {
+                    Ip = ip;
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPServer(ushort port = 0)
+                {
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Ip = IPAddress.Parse("127.0.0.1");
+                    Setup();
+                }
+                public TCPServer(IPAddress ip)
+                {
+                    Ip = ip;
+                    Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                public TCPServer()
+                {
+                    Ip = IPAddress.Parse("127.0.0.1");
+                    Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
+                readonly List<TCPClient> clients = new List<TCPClient>();
+                public TCPClient[] ConnectedClients { get => clients.ToArray(); }
+                public Socket ServerSocket { get; private set; }
+                public bool BeginReceiveOnConnection { get; set; } = true;
+                public bool AutoRelistenForMessages { get; set; } = true;
+                public int PacketBufferSize { get => buffer.Length; set => buffer = new byte[value]; }
+                void Setup()
+                {
+                    clients.Clear();
+                    ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    ServerSocket.Bind(new IPEndPoint(IPAddress.Any, Port));
+                }
+                private byte[] buffer = new byte[2048];
+                public void Shutdown()
+                {
+                    foreach (var client in ConnectedClients)
+                        DisconnectClient(client, "Server shutdown.");
+                    ServerSocket.Close();
+                }
+                void RemoveClient(Socket client)
+                {
+                    foreach (var c in clients)
+                        if (c.ClientSocket == client)
+                        { clients.Remove(c); break; }
+                }
+                TCPClient AddClient(Socket client)
+                {
+                    var c = new TCPClient(client);
+                    clients.Add(c);
+                    return c;
+                }
+                private void OnClientDataReceived(IAsyncResult data)
+                {
+                    Socket current = (Socket)data.AsyncState;
+                    int received;
+
+                    try
+                    {
+                        received = current.EndReceive(data);
+                    }
+                    catch
+                    {
+                        // Don't shutdown because the socket may be disposed and its disconnected anyway.
+                        current.Close();
+                        RemoveClient(current);
+                        ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(current), "Client forcefully disconnected"));
+                        return;
+                    }
+
+                    byte[] recBuf = new byte[received];
+                    Array.Copy(buffer, recBuf, received);
+                    ClientDataReceived?.Invoke(this, new ClientDataArgs(new TCPClient(current), recBuf));
+                    if (AutoRelistenForMessages)
+                        try { current.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, current); } catch { }
+                }
+                public int[] Broadcast(byte[] buffer)
+                {
+                    List<int> returns = new List<int>();
+                    foreach (var c in clients)
+                        returns.Add(SendToClient(c, buffer));
+                    return returns.ToArray();
+                }
+                public int[] Broadcast(byte[] buffer, SocketFlags flags)
+                {
+                    List<int> returns = new List<int>();
+                    foreach (var c in clients)
+                        returns.Add(SendToClient(c, buffer, flags));
+                    return returns.ToArray();
+                }
+                public int[] Broadcast(byte[] buffer, int size, SocketFlags flags)
+                {
+                    List<int> returns = new List<int>();
+                    foreach (var c in clients)
+                        returns.Add(SendToClient(c, buffer, size, flags));
+                    return returns.ToArray();
+                }
+                public int[] Broadcast(byte[] buffer, int offset, int size, SocketFlags flags)
+                {
+                    List<int> returns = new List<int>();
+                    foreach (var c in clients)
+                        returns.Add(SendToClient(c, buffer, offset, size, flags));
+                    return returns.ToArray();
+                }
+                public int[] Broadcast(byte[] buffer, int offset, int size, SocketFlags flags, out SocketError[] errorCodes)
+                {
+                    List<int> returns = new List<int>();
+                    List<SocketError> errors = new List<SocketError>();
+                    foreach (var c in clients)
+                    {
+                        returns.Add(SendToClient(c, buffer, offset, size, flags, out SocketError error));
+                        errors.Add(error);
+                    }
+                    errorCodes = errors.ToArray();
+                    return returns.ToArray();
+                }
+                public int[] BroadcastString(string text)
+                {
+                    List<int> returns = new List<int>();
+                    foreach (var c in clients)
+                        returns.Add(SendStringToClient(c, text));
+                    return returns.ToArray();
+                }
+                public void BroadcastFile(string file)
+                {
+                    foreach (var c in clients)
+                        SendFileToClient(c, file);
+                }
+                public void BroadcastFile(string file, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
+                {
+                    foreach (var c in clients)
+                        SendFileToClient(c, file, preBuffer, postBuffer, flags);
+                }
+                public int SendToClient(TCPClient client, byte[] buffer)
+                {
+                    return client.Send(buffer);
+                }
+                public int SendToClient(TCPClient client, byte[] buffer, SocketFlags flags)
+                {
+                    return client.Send(buffer, flags);
+                }
+                public int SendToClient(TCPClient client, byte[] buffer, int size, SocketFlags flags)
+                {
+                    return client.Send(buffer, size, flags);
+                }
+                public int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags)
+                {
+                    return client.Send(buffer, offset, size, flags);
+                }
+                public int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                {
+                    return client.Send(buffer, offset, size, flags, out errorCode);
+                }
+                public int SendStringToClient(TCPClient client, string text)
+                {
+                    return SendToClient(client, Encoding.ASCII.GetBytes(text));
+                }
+                public void SendFileToClient(TCPClient client, string fileName)
+                {
+                    client.SendFile(fileName);
+                }
+                public void SendFileToClient(TCPClient client, string fileName, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
+                {
+                    client.SendFile(fileName, preBuffer, postBuffer, flags);
+                }
+                private void OnClientConnection(IAsyncResult request)
+                {
+                    Socket socket = null;
+                    try { socket = ServerSocket.EndAccept(request); }
+                    catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
+                    var client = AddClient(socket);
+                    if (BeginReceiveOnConnection)
+                        try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
+                    ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
+                    ServerSocket.BeginAccept(OnClientConnection, null);
+                }
+                private class ASResult : IAsyncResult
+                {
+                    public bool IsCompleted { get; set; }
+
+                    public WaitHandle AsyncWaitHandle { get; set; }
+
+                    public object AsyncState { get; set; }
+
+                    public bool CompletedSynchronously { get; set; }
+                }
+                public void DisconnectClient(TCPClient client)
+                {
+                    try { client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.ClientSocket.Close(); } catch { }
+                    RemoveClient(client.ClientSocket);
+                    ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, "Manual Disconnection through 'Server.DisconnectClient()'"));
+                }
+                public void DisconnectClient(TCPClient client, string msg)
+                {
+                    try { client.ClientSocket.Send(Encoding.ASCII.GetBytes("SERVER SHUTDOWN")); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.ClientSocket.Close(); } catch { }
+                    RemoveClient(client.ClientSocket);
+                    ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, msg));
+                }
+                public void BeginReceive(int clientIndex)
+                {
+                    BeginReceive(clients[clientIndex]);
+                }
+                public void BeginReceive(TCPClient client)
+                {
+                    if (clients.Contains(client))
+                        client.ClientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
+                    else
+                        throw new Exception("Client is either not connected or not been listed correctly!");
+                }
+                public void StartListening()
+                {
+                    ServerSocket.Listen(0);
+                    ServerSocket.BeginAccept(OnClientConnection, null);
+                }
+                public IPAddress Ip { get; set; }
+                public ushort Port { get; set; }
+                private void OnClientConnectionFailed(Socket client, string msg = null)
+                {
+                    ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(new TCPClient(client), msg == null ? "" : msg));
+                }
+                public event EventHandler<ClientConnectionArgs> ClientConnectionFailed;
+                public event EventHandler<ClientConnectionArgs> ClientConnected;
+                public event EventHandler<ClientConnectionArgs> ClientDisconnected;
+                public event EventHandler<ClientDataArgs> ClientDataReceived;
+                public class ClientDataArgs : EventArgs
+                {
+                    public ClientDataArgs(TCPClient client, object data)
+                    {
+                        Client = client;
+                        Data = data;
+                    }
+
+                    public TCPClient Client { get; }
+                    public object Data { get; }
+                }
+                public class ClientConnectionArgs : EventArgs
+                {
+                    public ClientConnectionArgs(TCPClient client, string msg)
+                    {
+                        Client = client;
+                        Msg = msg;
+                    }
+
+                    public TCPClient Client { get; }
+                    public string Msg { get; }
+                }
             }
-            public string Message { get; }
+            public class WebCommunicator
+            {
+                public event EventHandler<WebCommunicatorArgs> MessageReceived;
+                public event EventHandler ListeningChanged;
+                public WebCommunicator(FTPClient.FTPFile communicationFile)
+                {
+                    CommunicationFile = communicationFile;
+                    updater.Interval = 1050;
+                    updater.Tick += Updater_Tick;
+                }
+                private bool _h = false;
+                public bool Listening { get => _h; internal set { _h = value; if (value) updater.Start(); else updater.Stop(); ListeningChanged?.Invoke(this, EventArgs.Empty); } }
+                private bool _stopListening = true;
+                public virtual void StartListening() => Listening = true;
+                public virtual void StopListening() => Listening = false;
+                public virtual void StartListeningUntilStopped() { Listening = true; _stopListening = false; }
+                private void Updater_Tick(object sender, EventArgs e)
+                {
+                    var t = new Thread(CheckMsg);
+                    t.Start();
+                }
+                void CheckMsg()
+                {
+                    if (Listening)
+                        if (CommunicationFile.Exists())
+                        { if (_stopListening) StopListening(); InternalGetMessage(); }
+                }
+                private void InternalGetMessage()
+                {
+                    GetMessage(out string args);
+                    if (args != null)
+                        MessageReceived?.Invoke(this, new WebCommunicatorArgs(args));
+                }
+                public virtual void GetMessage()
+                {
+                    GetMessage(out string args);
+                    MessageReceived?.Invoke(this, new WebCommunicatorArgs(args));
+                }
+                public virtual void SendMessage(string msg)
+                {
+                    var t = new Thread(InternalSendMessage);
+                    t.Start(msg);
+                }
+                internal virtual void InternalSendMessage(object msg)
+                {
+                    var request = CommunicationFile.GetRequest();
+                    request.KeepAlive = true;
+                    request.UseBinary = true;
+                    request.UsePassive = true;
+                    request.Method = WebRequestMethods.Ftp.UploadFile;
+                    using (System.IO.Stream r = request.GetRequestStream())
+                    using (System.IO.StreamWriter writer = new System.IO.StreamWriter(r))
+                        writer.Write(msg.ToString());
+                }
+                public virtual void GetMessage(out string content)
+                {
+                    FtpWebRequest request = Connection.CreateRequest(CommunicationFile.Path);
+                    request.KeepAlive = true;
+                    request.UsePassive = true;
+                    request.UseBinary = true;
+                    request.Method = WebRequestMethods.Ftp.DownloadFile;
+                    try
+                    {
+                        using (FtpWebResponse response = (FtpWebResponse)request.GetResponse()) // Error here
+                        using (System.IO.Stream responseStream = response.GetResponseStream())
+                        using (System.IO.StreamReader reader = new System.IO.StreamReader(responseStream))
+                            content = reader.ReadToEnd();
+                        CommunicationFile.Delete();
+                    }
+                    catch { content = null; }
+                }
+                Timer updater = new Timer();
+                public FTPClient Connection { get => CommunicationFile.Client; }
+                public FTPClient.FTPFile CommunicationFile { get; }
+            }
+            public class WebCommunicatorArgs : EventArgs
+            {
+                public WebCommunicatorArgs() { }
+                public WebCommunicatorArgs(string args)
+                {
+                    Message = args;
+                }
+                public string Message { get; }
+            }
         }
         public class FTPClient
         {
@@ -11665,7 +11878,8 @@ namespace CSharpExtendedCommands
                 }
                 public bool Exists()
                 {
-                    try {
+                    try
+                    {
                         var request = Client.CreateRequest(Path + "/7192h89ca67384h18913nf8asuy934081h9.txt");
                         request.Method = WebRequestMethods.Ftp.UploadFile;
                         request.UseBinary = true;
@@ -11677,7 +11891,8 @@ namespace CSharpExtendedCommands
                         request.Method = WebRequestMethods.Ftp.DeleteFile;
                         request.GetResponse();
                         return true;
-                    } catch { return false; }
+                    }
+                    catch { return false; }
                 }
                 public void UploadAsync(string src)
                 {
@@ -12347,7 +12562,7 @@ namespace CSharpExtendedCommands
                 public static void CenterOnContainer(this Control control) => control.Location = new Point(control.Parent.ClientRectangle.Size.Width / 2 - control.Size.Width / 2, control.Parent.ClientRectangle.Size.Height / 2 - control.Size.Height / 2);
                 public static decimal GetPercentage(this System.Windows.Forms.ProgressBar progressBar)
                 {
-                    decimal NTP = progressBar.Value *100/ progressBar.Maximum;
+                    decimal NTP = progressBar.Value * 100 / progressBar.Maximum;
                     if (NTP.ToString().Contains(","))
                         return Convert.ToDecimal(NTP.ToString().Substring(0, NTP.ToString().IndexOf(',') - 1));
                     else
@@ -12400,7 +12615,7 @@ namespace CSharpExtendedCommands
                 }
             }
         }
-            namespace RegularExpressions
+        namespace RegularExpressions
         {
             public static class RegexClassExtensions
             {
@@ -15746,7 +15961,7 @@ namespace CSharpExtendedCommands
                 {
                     string total = "";
                     int i;
-                    for (i = 1; i == StringToEncode.Length ; i++)
+                    for (i = 1; i == StringToEncode.Length; i++)
                     {
                         string tmp = StringToEncode[i].ToString();
                         tmp = Convert.ToChar(Convert.ToInt32(Convert.ToChar(Convert.ToByte(tmp))) - key).ToString();
@@ -15865,8 +16080,8 @@ namespace CSharpExtendedCommands
                 Microsoft.Win32.RegistryHive hive;
                 switch (rootkey)
                 {
-                    case "HKEY_CLASSES_ROOT": hive = Microsoft.Win32.RegistryHive.ClassesRoot;break;
-                    case "HKEY_CURRENT_CONFIG": hive = Microsoft.Win32.RegistryHive.CurrentConfig;break;
+                    case "HKEY_CLASSES_ROOT": hive = Microsoft.Win32.RegistryHive.ClassesRoot; break;
+                    case "HKEY_CURRENT_CONFIG": hive = Microsoft.Win32.RegistryHive.CurrentConfig; break;
                     case "HKEY_CURRENT_USER": hive = Microsoft.Win32.RegistryHive.CurrentUser; break;
                     case "HKEY_LOCAL_MACHINE": hive = Microsoft.Win32.RegistryHive.LocalMachine; break;
                     case "HKEY_USERS": hive = Microsoft.Win32.RegistryHive.Users; break;
@@ -16968,7 +17183,7 @@ namespace CSharpExtendedCommands
             protected virtual void OnItemSizeChanged() => ItemSizeChanged?.Invoke(this, EventArgs.Empty);
             protected virtual void OnSpacingChanged() => SpacingChanged?.Invoke(this, EventArgs.Empty);
             protected virtual void OnXoffsetChanged() => XoffsetChanged?.Invoke(this, EventArgs.Empty);
-            protected virtual void OnItemClickHandler(object sender, EventArgs e)=>OnItemClick((Control)sender);
+            protected virtual void OnItemClickHandler(object sender, EventArgs e) => OnItemClick((Control)sender);
             protected virtual void OnItemAdded(Control item)
             {
                 UpdateItems();
@@ -17042,7 +17257,7 @@ namespace CSharpExtendedCommands
                 {
                     case HorizontalAlignment.Left: foreach (var item in Items) item.Location = new Point(0, item.Location.Y); break;
                     case HorizontalAlignment.Right: foreach (var item in Items) if (item.Size.Width > Width) item.Location = new Point(0, item.Location.Y); else item.Location = new Point(Size.Width - item.Size.Width, item.Location.Y); break;
-                    case HorizontalAlignment.Center: foreach (var item in Items) if (item.Size.Width > Width) item.Location = new Point(0, item.Location.Y); else item.Location = new Point(Size.Width / 2 - item.Size.Width/2, item.Location.Y); break;
+                    case HorizontalAlignment.Center: foreach (var item in Items) if (item.Size.Width > Width) item.Location = new Point(0, item.Location.Y); else item.Location = new Point(Size.Width / 2 - item.Size.Width / 2, item.Location.Y); break;
                 }
             }
             public void AlignItem(Control item, HorizontalAlignment alignment)
@@ -17084,7 +17299,7 @@ namespace CSharpExtendedCommands
                 }
             }
         }
-        public class ControlListBoxItemArgs : EventArgs {public ControlListBoxItemArgs() { } public ControlListBoxItemArgs(Control item, Control lastItem) {Item = item; LastItem = lastItem; } public Control Item { get; } public Control LastItem { get; } }
+        public class ControlListBoxItemArgs : EventArgs { public ControlListBoxItemArgs() { } public ControlListBoxItemArgs(Control item, Control lastItem) { Item = item; LastItem = lastItem; } public Control Item { get; } public Control LastItem { get; } }
         public class DownloaderProgressBar : ProgressBar
         {
             public DownloaderProgressBar() { }
@@ -17177,7 +17392,7 @@ namespace CSharpExtendedCommands
                                 i = AcceptedChars.Count + 2;
                             }
                         }
-                    } 
+                    }
                 }
                 e.Handled = !IsInList;
             }
@@ -18181,122 +18396,122 @@ namespace CSharpExtendedCommands
                 FormToBeCentered.Location = new Point(LocationX, LocationY);
             }
         }
-            public class DrawingRectangle
+        public class DrawingRectangle
+        {
+            private Control Control { get; set; }
+            public bool IsDraw { get; set; } = false;
+            public DrawingRectangle(Control control)
             {
-                private Control Control { get; set; }
-                public bool IsDraw { get; set; } = false;
-                public DrawingRectangle(Control control)
+                graphics = control.CreateGraphics();
+                Control = control;
+                control.SizeChanged += UpdateControl;
+            }
+            private void UpdateControl(object sender, EventArgs e)
+            {
+                this.Control = (Control)sender;
+                graphics = this.Control.CreateGraphics();
+            }
+            public Point DrawLocation { get; private set; } = new Point(0, 0);
+            public Size DrawSize { get; private set; } = new Size(20, 20);
+            private Point _Location = new Point(0, 0);
+            public Point Location
+            {
+                get { return this._Location; }
+                set
                 {
-                    graphics = control.CreateGraphics();
-                    Control = control;
-                    control.SizeChanged += UpdateControl;
-                }
-                private void UpdateControl(object sender, EventArgs e)
-                {
-                    this.Control = (Control)sender;
-                    graphics = this.Control.CreateGraphics();
-                }
-                public Point DrawLocation { get; private set; } = new Point(0, 0);
-                public Size DrawSize { get; private set; } = new Size(20, 20);
-                private Point _Location = new Point(0, 0);
-                public Point Location
-                {
-                    get { return this._Location; }
-                    set
-                    {
-                        this._Location = value;
-                        if (IsDraw) { Update(); }
-                    }
-                }
-                private Size _Size = new Size(20, 20);
-                public Size Size
-                {
-                    get { return this._Size; }
-                    set
-                    {
-                        this._Size = value;
-                        if (IsDraw) { Update(); }
-                    }
-                }
-                public Color Color { get; set; } = Color.Black;
-                private System.Drawing.Graphics graphics = null;
-                public void Update()
-                {
-                    Draw();
-                }
-                public void Remove()
-                {
-                    IsDraw = false;
-                    graphics.FillRectangle(new SolidBrush(Control.BackColor), new Rectangle(DrawLocation, DrawSize));
-                }
-                public void Draw()
-                {
-                    if (IsDraw) { this.Remove(); }
-                    IsDraw = true;
-                    var br = new SolidBrush(this.Color);
-                    graphics.FillRectangle(br, new Rectangle(Location, this.Size));
-                    DrawLocation = Location;
-                    DrawSize = Size;
+                    this._Location = value;
+                    if (IsDraw) { Update(); }
                 }
             }
-            public class DrawingCircle
+            private Size _Size = new Size(20, 20);
+            public Size Size
             {
-                private Control Control { get; set; }
-                public bool IsDraw { get; set; } = false;
-                public DrawingCircle(Control control)
+                get { return this._Size; }
+                set
                 {
-                    graphics = control.CreateGraphics();
-                    Control = control;
-                    control.SizeChanged += UpdateControl;
-                }
-                private void UpdateControl(object sender, EventArgs e)
-                {
-                    this.Control = (Control)sender;
-                    graphics = this.Control.CreateGraphics();
-                }
-                public Point DrawLocation { get; private set; } = new Point(0, 0);
-                public Size DrawSize { get; private set; } = new Size(20, 20);
-                private Point _Location = new Point(0, 0);
-                public Point Location
-                {
-                    get { return this._Location; }
-                    set
-                    {
-                        this._Location = value;
-                        if (IsDraw) { Update(); }
-                    }
-                }
-                private Size _Size = new Size(20, 20);
-                public Size Size
-                {
-                    get { return this._Size; }
-                    set
-                    {
-                        this._Size = value;
-                        if (IsDraw) { Update(); }
-                    }
-                }
-                public Color Color { get; set; } = Color.Black;
-                private System.Drawing.Graphics graphics = null;
-                public void Update()
-                {
-                    Draw();
-                }
-                public void Remove()
-                {
-                    IsDraw = false;
-                    graphics.FillEllipse(new SolidBrush(Control.BackColor), new Rectangle(DrawLocation, DrawSize));
-                }
-                public void Draw()
-                {
-                    if (IsDraw) { this.Remove(); }
-                    IsDraw = true;
-                    var br = new SolidBrush(this.Color);
-                    graphics.FillEllipse(br, new Rectangle(Location, this.Size));
-                    DrawLocation = Location;
-                    DrawSize = Size;
+                    this._Size = value;
+                    if (IsDraw) { Update(); }
                 }
             }
+            public Color Color { get; set; } = Color.Black;
+            private System.Drawing.Graphics graphics = null;
+            public void Update()
+            {
+                Draw();
+            }
+            public void Remove()
+            {
+                IsDraw = false;
+                graphics.FillRectangle(new SolidBrush(Control.BackColor), new Rectangle(DrawLocation, DrawSize));
+            }
+            public void Draw()
+            {
+                if (IsDraw) { this.Remove(); }
+                IsDraw = true;
+                var br = new SolidBrush(this.Color);
+                graphics.FillRectangle(br, new Rectangle(Location, this.Size));
+                DrawLocation = Location;
+                DrawSize = Size;
+            }
+        }
+        public class DrawingCircle
+        {
+            private Control Control { get; set; }
+            public bool IsDraw { get; set; } = false;
+            public DrawingCircle(Control control)
+            {
+                graphics = control.CreateGraphics();
+                Control = control;
+                control.SizeChanged += UpdateControl;
+            }
+            private void UpdateControl(object sender, EventArgs e)
+            {
+                this.Control = (Control)sender;
+                graphics = this.Control.CreateGraphics();
+            }
+            public Point DrawLocation { get; private set; } = new Point(0, 0);
+            public Size DrawSize { get; private set; } = new Size(20, 20);
+            private Point _Location = new Point(0, 0);
+            public Point Location
+            {
+                get { return this._Location; }
+                set
+                {
+                    this._Location = value;
+                    if (IsDraw) { Update(); }
+                }
+            }
+            private Size _Size = new Size(20, 20);
+            public Size Size
+            {
+                get { return this._Size; }
+                set
+                {
+                    this._Size = value;
+                    if (IsDraw) { Update(); }
+                }
+            }
+            public Color Color { get; set; } = Color.Black;
+            private System.Drawing.Graphics graphics = null;
+            public void Update()
+            {
+                Draw();
+            }
+            public void Remove()
+            {
+                IsDraw = false;
+                graphics.FillEllipse(new SolidBrush(Control.BackColor), new Rectangle(DrawLocation, DrawSize));
+            }
+            public void Draw()
+            {
+                if (IsDraw) { this.Remove(); }
+                IsDraw = true;
+                var br = new SolidBrush(this.Color);
+                graphics.FillEllipse(br, new Rectangle(Location, this.Size));
+                DrawLocation = Location;
+                DrawSize = Size;
+            }
+        }
         public static class Info
         {
             public static Point GetMouseInFormLocation(Form frm, int Xoffset = 12, int Yoffset = 30)
@@ -18444,7 +18659,7 @@ namespace CSharpExtendedCommands
                         TargetControl.ControlAdded += OnTargetControl_ControlAdded;
                         TargetControl.ControlRemoved -= OnTargetControl_ControlRemoved;
                         TargetControl.ControlRemoved += OnTargetControl_ControlRemoved;
-                        for (int i =0;i < TargetControl.Controls.Count; i++)
+                        for (int i = 0; i < TargetControl.Controls.Count; i++)
                         {
                             var c = (Control)TargetControl.Controls[i];
                             c.MouseEnter -= OnTargetControl_MouseEnter;
@@ -19550,7 +19765,7 @@ namespace CSharpExtendedCommands
         }
         public static string GUID(string HexadecimalBytes)
         {
-            string[] bts =ByteStringToByteArray(HexadecimalBytes);
+            string[] bts = ByteStringToByteArray(HexadecimalBytes);
             return bts[3] + bts[2] + bts[1] + bts[0] + "-" + bts[5] + bts[4] + "-" + bts[6] + bts[7] + "-" + bts[8] + bts[9] + " " + bts[10] + bts[11] + bts[12] + bts[13] + bts[14] + bts[15];
         }
         /// <summary>
@@ -20713,7 +20928,7 @@ namespace CSharpExtendedCommands
             string GetNewPath(System.IO.FileInfo src)
             {
                 var sdir = new System.IO.DirectoryInfo(Src);
-                return System.IO.Path.Combine(new System.IO.DirectoryInfo(Dest).FullName, src.FullName.Substring(sdir.FullName.Length+1));
+                return System.IO.Path.Combine(new System.IO.DirectoryInfo(Dest).FullName, src.FullName.Substring(sdir.FullName.Length + 1));
             }
             string GetNewPath(System.IO.DirectoryInfo src)
             {
@@ -20740,7 +20955,7 @@ namespace CSharpExtendedCommands
                 directories = new System.IO.DirectoryInfo(Src).GetAllDirectories().ToList();
                 doneDirs = true;
             }
-            
+
             void CopyDir(object recursive)
             {
                 while (doneDirs == false || doneFiles == false) { Thread.Sleep(50); }
@@ -20808,7 +21023,7 @@ namespace CSharpExtendedCommands
                 System.IO.FileStream fsrc = new System.IO.FileStream(Src, System.IO.FileMode.Open);
                 byte[] bt = new byte[1048756];
                 int readByte;
-                while((readByte = fsrc.Read(bt, 0, bt.Length)) > 0)
+                while ((readByte = fsrc.Read(bt, 0, bt.Length)) > 0)
                 {
                     fout.Write(bt, 0, readByte);
                     Update((int)(fsrc.Position * 100 / fsrc.Length));
@@ -21298,7 +21513,7 @@ namespace CSharpExtendedCommands
                 get
                 {
                     using (System.IO.BinaryReader reader = new System.IO.BinaryReader(OpenRead))
-                        return Convert.ToString(reader.BaseStream.Length-1, 16).ToUpper();
+                        return Convert.ToString(reader.BaseStream.Length - 1, 16).ToUpper();
                 }
             }
             /// <summary>
@@ -21412,7 +21627,7 @@ namespace CSharpExtendedCommands
             private byte[] GetBuffer(string bytes)
             {
                 List<byte> bts = new List<byte>();
-                var b = bytes.Replace(" ", "").Replace("-", "").Replace("\r","");
+                var b = bytes.Replace(" ", "").Replace("-", "").Replace("\r", "");
                 if (b.Length % 2 != 0)
                     b = "0" + b;
                 for (int i = 0; i < b.Length; i += 2)
@@ -21430,7 +21645,7 @@ namespace CSharpExtendedCommands
                 System.IO.BinaryWriter writer = new System.IO.BinaryWriter(OpenWrite);
                 try
                 {
-                    
+
                     writer.BaseStream.Position = Address;
                     writer.Write(GetBuffer(Value));
                     writer.Close();

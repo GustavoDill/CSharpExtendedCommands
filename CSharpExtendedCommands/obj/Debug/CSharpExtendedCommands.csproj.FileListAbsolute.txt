@@ -36,3 +36,10 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\CSharpExtende
 C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
 C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.dll
 C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.pdb
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\bin\Debug\CSharpExtendedCommands.dll
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\bin\Debug\CSharpExtendedCommands.pdb
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\Interop.IWshRuntimeLibrary.dll
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.csproj.ResolveComReference.cache
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.dll
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Debug\CSharpExtendedCommands.pdb

@@ -34,18 +34,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CodeConvert">
-      <HintPath>Lib\CodeConvert.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="FastColoredTextBox">
-      <HintPath>Lib\FastColoredTextBox.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ICSharpCode.NRefactory">
-      <HintPath>Lib\ICSharpCode.NRefactory.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,17 +55,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Lib\CodeConvert.dll" />
-    <EmbeddedResource Include="Lib\ICSharpCode.NRefactory.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Lib\EnvDTE.dll" />
-    <EmbeddedResource Include="Lib\EnvDTE80.dll" />
-    <EmbeddedResource Include="Lib\Extensibility.dll" />
-    <EmbeddedResource Include="Lib\Microsoft.VisualStudio.CommandBars.dll" />
-    <EmbeddedResource Include="Lib\stdole.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <COMReference Include="IWshRuntimeLibrary">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
       <VersionMajor>1</VersionMajor>
@@ -87,9 +64,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Lib\FastColoredTextBox.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
