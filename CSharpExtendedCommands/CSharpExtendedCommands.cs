@@ -11282,6 +11282,46 @@ namespace CSharpExtendedCommands
         }
         namespace Communication
         {
+            public class TcpPackage
+            {
+                public static TcpPackage FromRawData(params byte[] rawData)
+                {
+                    var data = new byte[rawData.Length - 4];
+                    for (int i = 0; i < rawData.Length - 4; i++)
+                        data[i] = rawData[i + 4];
+                    return new TcpPackage(data);
+                }
+                public TcpPackage(string data)
+                {
+                    SetData(Encoding.ASCII.GetBytes(data));
+                }
+                public override string ToString()
+                {
+                    return Encoding.ASCII.GetString(Data);
+                }
+                public TcpPackage(params byte[] data)
+                {
+                    SetData(data);
+                }
+                void SetData(byte[] data)
+                {
+                    Data = data;
+                }
+                public byte[] RawData
+                {
+                    get
+                    {
+                        List<byte> bytes = new List<byte>();
+                        var bs = Size.ToString("X8");
+                        for (int i = 0; i < bs.Length; i += 2)
+                            bytes.Add((byte)Convert.ToInt32("0x" + bs.Substring(i, 2), 16));
+                        bytes.AddRange(Data);
+                        return bytes.ToArray();
+                    }
+                }
+                public int Size { get => Data.Length; }
+                public byte[] Data { get; private set; }
+            }
             public class TCPClient
             {
                 public TCPClient(Socket clientSocket, IPAddress ip, ushort port)
@@ -11387,6 +11427,22 @@ namespace CSharpExtendedCommands
                     var data = new byte[received];
                     Array.Copy(buffer, data, received);
                     return data;
+                }
+                public void SendPackage(TcpPackage package)
+                {
+                    ClientSocket.Send(package.RawData, package.Size + 4, SocketFlags.None);
+                }
+                public TcpPackage ReceivePackage()
+                {
+                    byte[] buffer = new byte[4];
+                    ClientSocket.Receive(buffer, buffer.Length, SocketFlags.None);
+                    var s = "";
+                    for (int i = 0; i < buffer.Length; i++)
+                        s += buffer[i].ToString("X2").Replace("0x", "");
+                    var size = Convert.ToInt32(s, 16);
+                    byte[] data = new byte[size];
+                    ClientSocket.Receive(data, size, SocketFlags.None);
+                    return new TcpPackage(data);
                 }
                 public string ReceiveString()
                 {
@@ -11522,6 +11578,11 @@ namespace CSharpExtendedCommands
                     clients.Add(c);
                     return c;
                 }
+                public enum DataReceiveType
+                {
+                    Normal,
+                    TcpPackage
+                }
                 private void OnClientDataReceived(IAsyncResult data)
                 {
                     Socket current = (Socket)data.AsyncState;
@@ -11539,48 +11600,48 @@ namespace CSharpExtendedCommands
                         ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(current), "Client forcefully disconnected"));
                         return;
                     }
-
                     byte[] recBuf = new byte[received];
                     Array.Copy(buffer, recBuf, received);
                     ClientDataReceived?.Invoke(this, new ClientDataArgs(new TCPClient(current), recBuf));
                     if (AutoRelistenForMessages)
                         try { current.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, current); } catch { }
                 }
+                public void SendPackageToClient(TCPClient client, TcpPackage package)
+                {
+                    client.SendPackage(package);
+                }
+                public TcpPackage ReceivePackageFromClient(TCPClient client)
+                {
+                    return client.ReceivePackage();
+                }
                 public int[] Broadcast(byte[] buffer)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
-                        returns.Add(SendToClient(c, buffer));
+                        returns.Add(SendToClient(c, buffer, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, SocketFlags flags)
+                public int[] Broadcast(byte[] buffer, int size)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
-                        returns.Add(SendToClient(c, buffer, flags));
+                        returns.Add(SendToClient(c, buffer, size, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, int size, SocketFlags flags)
+                public int[] Broadcast(byte[] buffer, int offset, int size)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
-                        returns.Add(SendToClient(c, buffer, size, flags));
+                        returns.Add(SendToClient(c, buffer, offset, size, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, int offset, int size, SocketFlags flags)
-                {
-                    List<int> returns = new List<int>();
-                    foreach (var c in clients)
-                        returns.Add(SendToClient(c, buffer, offset, size, flags));
-                    return returns.ToArray();
-                }
-                public int[] Broadcast(byte[] buffer, int offset, int size, SocketFlags flags, out SocketError[] errorCodes)
+                public int[] Broadcast(byte[] buffer, int offset, int size, out SocketError[] errorCodes)
                 {
                     List<int> returns = new List<int>();
                     List<SocketError> errors = new List<SocketError>();
                     foreach (var c in clients)
                     {
-                        returns.Add(SendToClient(c, buffer, offset, size, flags, out SocketError error));
+                        returns.Add(SendToClient(c, buffer, offset, size, SocketFlags.Broadcast, out SocketError error));
                         errors.Add(error);
                     }
                     errorCodes = errors.ToArray();
@@ -11695,7 +11756,9 @@ namespace CSharpExtendedCommands
                 public event EventHandler<ClientConnectionArgs> ClientConnectionFailed;
                 public event EventHandler<ClientConnectionArgs> ClientConnected;
                 public event EventHandler<ClientConnectionArgs> ClientDisconnected;
+#pragma warning disable CS0067 // false warning disabled
                 public event EventHandler<ClientDataArgs> ClientDataReceived;
+#pragma warning restore CS0067
                 public class ClientDataArgs : EventArgs
                 {
                     public ClientDataArgs(TCPClient client, object data)

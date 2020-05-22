@@ -34,3 +34,11 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpE
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.dll
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.pdb
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\bin\Release\CSharpExtendedCommands.dll
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\bin\Release\CSharpExtendedCommands.pdb
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csprojAssemblyReference.cache
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\Interop.IWshRuntimeLibrary.dll
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.ResolveComReference.cache
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.dll
+C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.pdb
