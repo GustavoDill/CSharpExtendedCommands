@@ -11319,6 +11319,26 @@ namespace CSharpExtendedCommands
                         return bytes.ToArray();
                     }
                 }
+                public static implicit operator TcpPackage(string v)
+                {
+                    return new TcpPackage(v);
+                }
+                public static implicit operator TcpPackage(byte[] v)
+                {
+                    return new TcpPackage(v);
+                }
+                public static implicit operator string(TcpPackage v)
+                {
+                    return v.ToString();
+                }
+                public static implicit operator byte[](TcpPackage v)
+                {
+                    return v.Data;
+                }
+                public static implicit operator int(TcpPackage v)
+                {
+                    return v.Size;
+                }
                 public int Size { get => Data.Length; }
                 public byte[] Data { get; private set; }
             }
