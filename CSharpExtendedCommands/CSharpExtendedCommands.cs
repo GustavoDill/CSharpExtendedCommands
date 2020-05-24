@@ -35,94 +35,94 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    namespace UI.Graphics
-    {
-        public static partial class ManipulateObject
-        {
-            public static void CenterFormInScreen(Form frm)
-            {
-                int frmW = frm.Size.Width;
-                int frmH = frm.Size.Height;
-                int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
-                int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
-                frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
-            }
-        }
-    }
-    namespace Info
-    {
-        public static partial class ComputerInfo
-        {
-            public static string OSFullName()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.OSFullName;
-            }
-            public static ulong GetAvailablePhysicalMemory()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.AvailablePhysicalMemory;
-            }
-            public static ulong GetAvailableVirtualMemory()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.AvailableVirtualMemory;
-            }
-            public static System.Globalization.CultureInfo InstalledLanguage()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.InstalledUICulture;
-            }
-            public static string OsPlatform()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.OSPlatform;
-            }
-            public static string OsVersion()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.OSVersion;
-            }
-            public static ulong GetTotalPhysicalMemory()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.TotalPhysicalMemory;
-            }
-            public static ulong GetTotalVirtualMemory()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Info.TotalVirtualMemory;
-            }
-            public static int ScreenWidth()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return computerInfo.Screen.Bounds.Width;
-            }
-            public static int ScreenHeight()
-            {
-                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-                return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
-            }
-        }
-    }
-    namespace IO
-    {
-        public static class FileSystem
-        {
-            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-            {
-                var shell = new IWshRuntimeLibrary.WshShell();
-                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-                shortcut.TargetPath = ExePath;
-                if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-                shortcut.Save();
-            }
-        }
-    }
+    //namespace UI.Graphics
+    //{
+    //    public static partial class ManipulateObject
+    //    {
+    //        public static void CenterFormInScreen(Form frm)
+    //        {
+    //            int frmW = frm.Size.Width;
+    //            int frmH = frm.Size.Height;
+    //            int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
+    //            int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
+    //            frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
+    //        }
+    //    }
+    //}
+    //namespace Info
+    //{
+    //    public static partial class ComputerInfo
+    //    {
+    //        public static string OSFullName()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.OSFullName;
+    //        }
+    //        public static ulong GetAvailablePhysicalMemory()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.AvailablePhysicalMemory;
+    //        }
+    //        public static ulong GetAvailableVirtualMemory()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.AvailableVirtualMemory;
+    //        }
+    //        public static System.Globalization.CultureInfo InstalledLanguage()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.InstalledUICulture;
+    //        }
+    //        public static string OsPlatform()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.OSPlatform;
+    //        }
+    //        public static string OsVersion()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.OSVersion;
+    //        }
+    //        public static ulong GetTotalPhysicalMemory()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.TotalPhysicalMemory;
+    //        }
+    //        public static ulong GetTotalVirtualMemory()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Info.TotalVirtualMemory;
+    //        }
+    //        public static int ScreenWidth()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return computerInfo.Screen.Bounds.Width;
+    //        }
+    //        public static int ScreenHeight()
+    //        {
+    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //            return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
+    //        }
+    //    }
+    //}
+    //namespace IO
+    //{
+    //    public static class FileSystem
+    //    {
+    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+    //        {
+    //            var shell = new IWshRuntimeLibrary.WshShell();
+    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+    //            shortcut.TargetPath = ExePath;
+    //            if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+    //            shortcut.Save();
+    //        }
+    //    }
+    //}
     namespace Web
     {
         namespace HtmlAgilityPack
