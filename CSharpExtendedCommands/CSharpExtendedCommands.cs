@@ -11312,9 +11312,8 @@ namespace CSharpExtendedCommands
                     get
                     {
                         List<byte> bytes = new List<byte>();
-                        var bs = Size.ToString("X8");
-                        for (int i = 0; i < bs.Length; i += 2)
-                            bytes.Add((byte)Convert.ToInt32("0x" + bs.Substring(i, 2), 16));
+                        var s = Size.ToString("X8");
+                        bytes.AddRange(Encoding.ASCII.GetBytes(s));
                         bytes.AddRange(Data);
                         return bytes.ToArray();
                     }
@@ -11430,16 +11429,13 @@ namespace CSharpExtendedCommands
                 }
                 public void SendPackage(TcpPackage package)
                 {
-                    ClientSocket.Send(package.RawData, package.Size + 4, SocketFlags.None);
+                    ClientSocket.Send(package.RawData, package.Size + 8, SocketFlags.None);
                 }
                 public TcpPackage ReceivePackage()
                 {
-                    byte[] buffer = new byte[4];
+                    byte[] buffer = new byte[8];
                     ClientSocket.Receive(buffer, buffer.Length, SocketFlags.None);
-                    var s = "";
-                    for (int i = 0; i < buffer.Length; i++)
-                        s += buffer[i].ToString("X2").Replace("0x", "");
-                    var size = Convert.ToInt32(s, 16);
+                    var size = Convert.ToInt32("0x" + Encoding.ASCII.GetString(buffer), 16);
                     byte[] data = new byte[size];
                     ClientSocket.Receive(data, size, SocketFlags.None);
                     return new TcpPackage(data);
@@ -11547,6 +11543,7 @@ namespace CSharpExtendedCommands
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
+                public bool Running { get; private set; }
                 readonly List<TCPClient> clients = new List<TCPClient>();
                 public TCPClient[] ConnectedClients { get => clients.ToArray(); }
                 public Socket ServerSocket { get; private set; }
@@ -11565,6 +11562,7 @@ namespace CSharpExtendedCommands
                     foreach (var client in ConnectedClients)
                         DisconnectClient(client, "Server shutdown.");
                     ServerSocket.Close();
+                    Running = false;
                 }
                 void RemoveClient(Socket client)
                 {
@@ -11726,7 +11724,7 @@ namespace CSharpExtendedCommands
                 }
                 public void DisconnectClient(TCPClient client, string msg)
                 {
-                    try { client.ClientSocket.Send(Encoding.ASCII.GetBytes("SERVER SHUTDOWN")); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.ClientSocket.Send(Encoding.ASCII.GetBytes(msg)); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
                     try { client.ClientSocket.Close(); } catch { }
                     RemoveClient(client.ClientSocket);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, msg));
@@ -11742,10 +11740,11 @@ namespace CSharpExtendedCommands
                     else
                         throw new Exception("Client is either not connected or not been listed correctly!");
                 }
-                public void StartListening()
+                public void Start()
                 {
                     ServerSocket.Listen(0);
                     ServerSocket.BeginAccept(OnClientConnection, null);
+                    Running = true;
                 }
                 public IPAddress Ip { get; set; }
                 public ushort Port { get; set; }
