@@ -12,6 +12,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
@@ -34,94 +35,94 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    //namespace UI.Graphics
-    //{
-    //    public static partial class ManipulateObject
-    //    {
-    //        public static void CenterFormInScreen(Form frm)
-    //        {
-    //            int frmW = frm.Size.Width;
-    //            int frmH = frm.Size.Height;
-    //            int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
-    //            int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
-    //            frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
-    //        }
-    //    }
-    //}
-    //namespace Info
-    //{
-    //    public static partial class ComputerInfo
-    //    {
-    //        public static string OSFullName()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSFullName;
-    //        }
-    //        public static ulong GetAvailablePhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailablePhysicalMemory;
-    //        }
-    //        public static ulong GetAvailableVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailableVirtualMemory;
-    //        }
-    //        public static System.Globalization.CultureInfo InstalledLanguage()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.InstalledUICulture;
-    //        }
-    //        public static string OsPlatform()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSPlatform;
-    //        }
-    //        public static string OsVersion()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSVersion;
-    //        }
-    //        public static ulong GetTotalPhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalPhysicalMemory;
-    //        }
-    //        public static ulong GetTotalVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalVirtualMemory;
-    //        }
-    //        public static int ScreenWidth()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Screen.Bounds.Width;
-    //        }
-    //        public static int ScreenHeight()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
-    //        }
-    //    }
-    //}
-    //namespace IO
-    //{
-    //    public static class FileSystem
-    //    {
-    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-    //        {
-    //            var shell = new IWshRuntimeLibrary.WshShell();
-    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-    //            shortcut.TargetPath = ExePath;
-    //            if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-    //            shortcut.Save();
-    //        }
-    //    }
-    //}
+    namespace UI.Graphics
+    {
+        public static partial class ManipulateObject
+        {
+            public static void CenterFormInScreen(Form frm)
+            {
+                int frmW = frm.Size.Width;
+                int frmH = frm.Size.Height;
+                int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
+                int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
+                frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
+            }
+        }
+    }
+    namespace Info
+    {
+        public static partial class ComputerInfo
+        {
+            public static string OSFullName()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSFullName;
+            }
+            public static ulong GetAvailablePhysicalMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.AvailablePhysicalMemory;
+            }
+            public static ulong GetAvailableVirtualMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.AvailableVirtualMemory;
+            }
+            public static System.Globalization.CultureInfo InstalledLanguage()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.InstalledUICulture;
+            }
+            public static string OsPlatform()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSPlatform;
+            }
+            public static string OsVersion()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSVersion;
+            }
+            public static ulong GetTotalPhysicalMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.TotalPhysicalMemory;
+            }
+            public static ulong GetTotalVirtualMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.TotalVirtualMemory;
+            }
+            public static int ScreenWidth()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Screen.Bounds.Width;
+            }
+            public static int ScreenHeight()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
+            }
+        }
+    }
+    namespace IO
+    {
+        public static class FileSystem
+        {
+            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+            {
+                var shell = new IWshRuntimeLibrary.WshShell();
+                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+                shortcut.TargetPath = ExePath;
+                if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+                shortcut.Save();
+            }
+        }
+    }
     namespace Web
     {
         namespace HtmlAgilityPack
@@ -11414,6 +11415,18 @@ namespace CSharpExtendedCommands
                         ClientSocket.Close();
                     }
                 }
+                public int ReceiveTimeout { get => ClientSocket.ReceiveTimeout; set => ClientSocket.ReceiveTimeout = value; }
+                public int SendTimeout { get => ClientSocket.SendTimeout; set => ClientSocket.SendTimeout = value; }
+                public AddressFamily AddressFamily { get => ClientSocket.AddressFamily; }
+                public int Avaliable { get => ClientSocket.Available; }
+                public bool EnableBroadcast { get => ClientSocket.EnableBroadcast; set => ClientSocket.EnableBroadcast = value; }
+
+                public Stream ReceiveFile()
+                {
+                    var package = ReceivePackage();
+                    var buffer = package.Data;
+                    return new MemoryStream(buffer);
+                }
                 public byte[] Receive()
                 {
                     return Receive(2048);
@@ -11430,6 +11443,14 @@ namespace CSharpExtendedCommands
                 public void SendPackage(TcpPackage package)
                 {
                     ClientSocket.Send(package.RawData, package.Size + 8, SocketFlags.None);
+                }
+                public void SendPackage(TcpPackage package, SocketFlags flags)
+                {
+                    ClientSocket.Send(package.RawData, package.Size + 8, flags);
+                }
+                public void SendPackage(TcpPackage package, SocketFlags flags, out SocketError errorCode)
+                {
+                    ClientSocket.Send(package.RawData, 0, package.Size + 8, flags, out errorCode);
                 }
                 public TcpPackage ReceivePackage()
                 {
@@ -11473,13 +11494,20 @@ namespace CSharpExtendedCommands
                 {
                     return Send(Encoding.ASCII.GetBytes(text));
                 }
+                public void SendFile(string file, SocketFlags flags, out SocketError errorCode)
+                {
+                    var reader = new BinaryReader(File.OpenRead(file));
+                    var buffer = reader.ReadBytes((int)reader.BaseStream.Length);
+                    reader.Close();
+                    SendPackage(new TcpPackage(buffer), flags, out errorCode);
+                }
+                public void SendFile(string file, SocketFlags flags)
+                {
+                    SendFile(file, flags, out SocketError _);
+                }
                 public void SendFile(string file)
                 {
-                    ClientSocket.SendFile(file);
-                }
-                public void SendFile(string file, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
-                {
-                    ClientSocket.SendFile(file, preBuffer, postBuffer, flags);
+                    SendFile(file, SocketFlags.None, out SocketError _);
                 }
                 public Socket ClientSocket { get; private set; }
                 public IPAddress Ip { get; set; }
@@ -11657,10 +11685,19 @@ namespace CSharpExtendedCommands
                     foreach (var c in clients)
                         SendFileToClient(c, file);
                 }
-                public void BroadcastFile(string file, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
+                public void BroadcastFile(string file, out SocketError[] errorCode)
                 {
+                    List<SocketError> errorCodes = new List<SocketError>();
                     foreach (var c in clients)
-                        SendFileToClient(c, file, preBuffer, postBuffer, flags);
+                    { SendFileToClient(c, file, SocketFlags.Broadcast, out SocketError error); errorCodes.Add(error); }
+                    errorCode = errorCodes.ToArray();
+                }
+                public void BroadcastFile(string file, SocketFlags flags, out SocketError[] errorCode)
+                {
+                    List<SocketError> errorCodes = new List<SocketError>();
+                    foreach (var c in clients)
+                    { SendFileToClient(c, file, flags, out SocketError error); errorCodes.Add(error); }
+                    errorCode = errorCodes.ToArray();
                 }
                 public int SendToClient(TCPClient client, byte[] buffer)
                 {
@@ -11690,21 +11727,53 @@ namespace CSharpExtendedCommands
                 {
                     client.SendFile(fileName);
                 }
-                public void SendFileToClient(TCPClient client, string fileName, byte[] preBuffer, byte[] postBuffer, TransmitFileOptions flags)
+                public void SendFileToClient(TCPClient client, string fileName, SocketFlags flags)
                 {
-                    client.SendFile(fileName, preBuffer, postBuffer, flags);
+                    client.SendFile(fileName, flags, out SocketError _);
+                }
+                public void SendFileToClient(TCPClient client, string fileName, SocketFlags flags, out SocketError errorCode)
+                {
+                    client.SendFile(fileName, flags, out errorCode);
+                }
+                private void RefuseConnection(ClientConnectionArgs e)
+                {
+                    DisconnectClient(e.Client, "Connection refused!");
                 }
                 private void OnClientConnection(IAsyncResult request)
                 {
-                    Socket socket = null;
-                    try { socket = ServerSocket.EndAccept(request); }
-                    catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
-                    var client = AddClient(socket);
-                    if (BeginReceiveOnConnection)
-                        try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
-                    ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
-                    ServerSocket.BeginAccept(OnClientConnection, null);
+                    if (ClientTryConnect != null)
+                    {
+                        Socket socket = null;
+                        try { socket = ServerSocket.EndAccept(request); }
+                        catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
+                        var client = new TCPClient(socket);
+                        var args = new ClientConnectionArgs(client, "Client connecting...");
+                        if (ClientTryConnect.Invoke(this, args))
+                        {
+                            clients.Add(client);
+                            ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
+                            if (BeginReceiveOnConnection)
+                                try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
+                            ServerSocket.BeginAccept(OnClientConnection, null);
+                        }
+                        else
+                            RefuseConnection(args);
+                    }
+                    else
+                    {
+                        Socket socket = null;
+                        try { socket = ServerSocket.EndAccept(request); }
+                        catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
+                        var client = AddClient(socket);
+                        if (BeginReceiveOnConnection)
+                            try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
+                        ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
+                        ServerSocket.BeginAccept(OnClientConnection, null);
+                    }
                 }
+                public event EventHandler<ClientConnectionArgs> ClientConnectionRefused;
+                public delegate bool ClientConnectionHandler(object sender, ClientConnectionArgs e);
+                public event ClientConnectionHandler ClientTryConnect;
                 private class ASResult : IAsyncResult
                 {
                     public bool IsCompleted { get; set; }
@@ -22373,27 +22442,19 @@ namespace CSharpExtendedCommands
         }
         public static partial class ComputerInfo
         {
-            public static string Name()
+            public static string Name { get => Environment.MachineName; }
+
+            public static IPAddress[] LocalAddressList
             {
-                return System.Environment.MachineName;
-            }
-            public static string GetLocalIPAddress()
-            {
-                return System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList[0].ToString();
+                get => System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
             }
             public static string ComputerHWID(bool Encrypted = false)
             {
                 string hdd;
-                string cpu;
-                string mb;
-                string mac;
                 string hwid;
 
-                cpu = GetProcessorId();
                 hdd = GetVolumeSerial("C");
-                mb = GetMotherBoardID();
-                mac = GetMACAddress();
-                hwid = cpu + hdd + mb + mac;
+                hwid = ProcessorId + hdd + MotherBoardID + MACAddress;
                 Data.Cryptography.Hasher hash = new Data.Cryptography.Hasher();
                 string hwidEncrypted = Convert.ToString(hash.MD5Hash(hwid)).ToUpper();
                 if (Encrypted == true)
@@ -22405,35 +22466,41 @@ namespace CSharpExtendedCommands
                     return hwid;
                 }
             }
-            public static string GetProcessorId()
+            public static string ProcessorId
             {
-                string strProcessorId = string.Empty;
-                SelectQuery query = new SelectQuery("Win32_processor");
-                ManagementObjectSearcher search = new ManagementObjectSearcher(query);
-                foreach (ManagementObject info in search.Get())
+                get
                 {
-                    strProcessorId = info["processorId"].ToString();
-                }
-                return strProcessorId;
-            }
-            public static string GetMACAddress()
-            {
-                ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-                ManagementObjectCollection moc = mc.GetInstances();
-                string MACAddress = string.Empty;
-                foreach (ManagementObject mo in moc)
-                {
-                    if (MACAddress.Equals(string.Empty))
+                    string strProcessorId = string.Empty;
+                    SelectQuery query = new SelectQuery("Win32_processor");
+                    ManagementObjectSearcher search = new ManagementObjectSearcher(query);
+                    foreach (ManagementObject info in search.Get())
                     {
-                        if (Convert.ToBoolean(mo["IPEnabled"]))
-                        {
-                            MACAddress = mo["MacAddress"].ToString();
-                        }
-                        mo.Dispose();
+                        strProcessorId = info["processorId"].ToString();
                     }
-                    MACAddress = MACAddress.Replace(":", string.Empty);
+                    return strProcessorId;
                 }
-                return MACAddress;
+            }
+            public static string MACAddress
+            {
+                get
+                {
+                    ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+                    ManagementObjectCollection moc = mc.GetInstances();
+                    string MACAddress = string.Empty;
+                    foreach (ManagementObject mo in moc)
+                    {
+                        if (MACAddress.Equals(string.Empty))
+                        {
+                            if (Convert.ToBoolean(mo["IPEnabled"]))
+                            {
+                                MACAddress = mo["MacAddress"].ToString();
+                            }
+                            mo.Dispose();
+                        }
+                        MACAddress = MACAddress.Replace(":", string.Empty);
+                    }
+                    return MACAddress;
+                }
             }
             public static string GetVolumeSerial(string strDriveLetter = "C")
             {
@@ -22441,16 +22508,19 @@ namespace CSharpExtendedCommands
                 disk.Get();
                 return disk["VolumeSerialNumber"].ToString();
             }
-            public static string GetMotherBoardID()
+            public static string MotherBoardID
             {
-                string strMotherBoardID = string.Empty;
-                SelectQuery query = new SelectQuery("Win32_BaseBoard");
-                ManagementObjectSearcher search = new ManagementObjectSearcher(query);
-                foreach (ManagementObject info in search.Get())
+                get
                 {
-                    strMotherBoardID = info["product"].ToString();
+                    string strMotherBoardID = string.Empty;
+                    SelectQuery query = new SelectQuery("Win32_BaseBoard");
+                    ManagementObjectSearcher search = new ManagementObjectSearcher(query);
+                    foreach (ManagementObject info in search.Get())
+                    {
+                        strMotherBoardID = info["product"].ToString();
+                    }
+                    return strMotherBoardID;
                 }
-                return strMotherBoardID;
             }
         }
     }
