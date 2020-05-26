@@ -11472,6 +11472,25 @@ namespace CSharpExtendedCommands
                 {
                     ClientSocket.Send(package.RawData, 0, package.Size + 8, flags, out errorCode);
                 }
+                public byte[] ReceiveExact(int size)
+                {
+                    int mustReceive = size;
+                    byte[] buffer;
+                    List<byte> data = new List<byte>();
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[mustReceive];
+                        var rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    return data.ToArray();
+                }
                 public TcpPackage ReceivePackage()
                 {
                     byte[] buffer;
@@ -11681,6 +11700,10 @@ namespace CSharpExtendedCommands
                 public void SendPackageToClient(TCPClient client, TcpPackage package)
                 {
                     client.SendPackage(package);
+                }
+                public byte[] ReceiveExactFromClient(TCPClient client, int size)
+                {
+                    return client.ReceiveExact(size);
                 }
                 public TcpPackage ReceivePackageFromClient(TCPClient client)
                 {
