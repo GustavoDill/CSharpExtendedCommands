@@ -11474,12 +11474,38 @@ namespace CSharpExtendedCommands
                 }
                 public TcpPackage ReceivePackage()
                 {
-                    byte[] buffer = new byte[8];
-                    ClientSocket.Receive(buffer, buffer.Length, SocketFlags.None);
-                    var size = Convert.ToInt32("0x" + Encoding.ASCII.GetString(buffer), 16);
-                    byte[] data = new byte[size];
-                    ClientSocket.Receive(data, size, SocketFlags.None);
-                    return new TcpPackage(data);
+                    byte[] buffer;
+                    int mustReceive = 8;
+                    List<byte> data = new List<byte>();
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[mustReceive];
+                        var rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    string sizeData = Encoding.ASCII.GetString(data.ToArray());
+                    var size = Convert.ToInt32("0x" + sizeData, 16);
+                    data.Clear();
+                    mustReceive = size;
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[mustReceive];
+                        var rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    return new TcpPackage(data.ToArray());
                 }
                 public string ReceiveString()
                 {
@@ -11791,7 +11817,9 @@ namespace CSharpExtendedCommands
                         ServerSocket.BeginAccept(OnClientConnection, null);
                     }
                 }
+#pragma warning disable CS0067
                 public event EventHandler<ClientConnectionArgs> ClientConnectionRefused;
+#pragma warning restore CS0067
                 public delegate bool ClientConnectionHandler(object sender, ClientConnectionArgs e);
                 public event ClientConnectionHandler ClientTryConnect;
                 private class ASResult : IAsyncResult
