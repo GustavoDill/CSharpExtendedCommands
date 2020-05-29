@@ -22543,7 +22543,7 @@ namespace CSharpExtendedCommands
                 {
                     try
                     {
-                        var req = new WebClient().DownloadString("ifconfig.me");
+                        var req = new WebClient().DownloadString("http://ifconfig.me");
                         if (IPAddress.TryParse(req, out IPAddress _))
                             return IPAddress.Parse(req);
                         else
