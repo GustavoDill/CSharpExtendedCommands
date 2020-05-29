@@ -11360,6 +11360,15 @@ namespace CSharpExtendedCommands
                     }
                     catch { }
                 }
+                public TCPClient(string hostName, ushort port = 0, int addressListIndex = 0)
+                {
+                    Ip = Dns.GetHostAddresses(hostName)[addressListIndex];
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
                 public TCPClient(string ip, ushort port = 0)
                 {
                     if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
@@ -11594,6 +11603,15 @@ namespace CSharpExtendedCommands
             }
             public class TCPServer
             {
+                public TCPServer(string hostName, ushort port = 0, int addressListIndex = 0)
+                {
+                    Ip = Dns.GetHostAddresses(hostName)[addressListIndex];
+                    if (port != 0)
+                        Port = port;
+                    else
+                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                    Setup();
+                }
                 public TCPServer(string ip, ushort port = 0)
                 {
                     if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
@@ -22518,6 +22536,22 @@ namespace CSharpExtendedCommands
             public static IPAddress[] LocalAddressList
             {
                 get => System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList;
+            }
+            public static IPAddress ExternalIpAddress
+            {
+                get
+                {
+                    try
+                    {
+                        var req = new WebClient().DownloadString("ifconfig.me");
+                        req = Regex.Match(req, @"<strong id=""ip_address"">([\w\d\.]+)</strong>").Groups[1].Value;
+                        if (IPAddress.TryParse(req, out IPAddress _))
+                            return IPAddress.Parse(req);
+                        else
+                            return null;
+                    }
+                    catch { return null; }
+                }
             }
             public static string ComputerHWID(bool Encrypted = false)
             {
