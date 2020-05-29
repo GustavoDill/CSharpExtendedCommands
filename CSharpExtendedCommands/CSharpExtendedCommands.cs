@@ -22544,7 +22544,6 @@ namespace CSharpExtendedCommands
                     try
                     {
                         var req = new WebClient().DownloadString("ifconfig.me");
-                        req = Regex.Match(req, @"<strong id=""ip_address"">([\w\d\.]+)</strong>").Groups[1].Value;
                         if (IPAddress.TryParse(req, out IPAddress _))
                             return IPAddress.Parse(req);
                         else
