@@ -11411,7 +11411,7 @@ namespace CSharpExtendedCommands
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
-                private void Setup()
+                internal virtual void Setup()
                 {
                     ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 }
@@ -11571,7 +11571,7 @@ namespace CSharpExtendedCommands
                 public Socket ClientSocket { get; private set; }
                 public IPAddress Ip { get; set; }
 
-                private ushort _port;
+                internal ushort _port;
 
                 public ushort Port
                 {
@@ -11640,19 +11640,19 @@ namespace CSharpExtendedCommands
                     Setup();
                 }
                 public virtual bool Running { get; private set; }
-                readonly List<TCPClient> clients = new List<TCPClient>();
+                internal readonly List<TCPClient> clients = new List<TCPClient>();
                 public virtual TCPClient[] ConnectedClients { get => clients.ToArray(); }
                 public Socket ServerSocket { get; private set; }
                 public virtual bool BeginReceiveOnConnection { get; set; } = true;
                 public virtual bool AutoRelistenForMessages { get; set; } = true;
                 public virtual int PacketBufferSize { get => buffer.Length; set => buffer = new byte[value]; }
-                void Setup()
+                internal virtual void Setup()
                 {
                     clients.Clear();
                     ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     ServerSocket.Bind(new IPEndPoint(IPAddress.Any, Port));
                 }
-                private byte[] buffer = new byte[2048];
+                internal byte[] buffer = new byte[2048];
                 public virtual void Shutdown()
                 {
                     foreach (var client in ConnectedClients)
@@ -11660,13 +11660,13 @@ namespace CSharpExtendedCommands
                     ServerSocket.Close();
                     Running = false;
                 }
-                void RemoveClient(Socket client)
+                internal virtual void RemoveClient(Socket client)
                 {
                     foreach (var c in clients)
                         if (c.ClientSocket == client)
                         { clients.Remove(c); break; }
                 }
-                TCPClient AddClient(Socket client)
+                internal virtual TCPClient AddClient(Socket client)
                 {
                     var c = new TCPClient(client);
                     clients.Add(c);
@@ -11843,16 +11843,6 @@ namespace CSharpExtendedCommands
 #pragma warning restore CS0067
                 public delegate bool ClientConnectionHandler(object sender, ClientConnectionArgs e);
                 public event ClientConnectionHandler ClientTryConnect;
-                private class ASResult : IAsyncResult
-                {
-                    public bool IsCompleted { get; set; }
-
-                    public WaitHandle AsyncWaitHandle { get; set; }
-
-                    public object AsyncState { get; set; }
-
-                    public bool CompletedSynchronously { get; set; }
-                }
                 public virtual void DisconnectClient(TCPClient client)
                 {
                     try { client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
