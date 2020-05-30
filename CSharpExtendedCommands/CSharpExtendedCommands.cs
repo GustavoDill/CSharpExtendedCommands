@@ -11415,28 +11415,13 @@ namespace CSharpExtendedCommands
                 {
                     ClientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 }
-                public void Connect(IPAddress ip)
-                {
-                    if (!Connected)
-                        Connect(ip, Port);
-                }
-                public void Connect(string ip)
-                {
-                    if (!Connected)
-                        try { Connect(IPAddress.Parse(ip)); } catch (Exception ex) { throw ex; }
-                }
-                public void Connect(IPAddress ip, ushort port)
-                {
-                    if (!Connected)
-                    { try { ClientSocket.Connect(ip, port); } catch (Exception ex) { throw ex; } }
-                }
                 public bool Connected { get => ClientSocket.Connected; }
-                public void Connect()
+                public virtual void Connect()
                 {
                     if (!Connected)
-                        Connect(Ip, Port);
+                    { try { ClientSocket.Connect(Ip, Port); } catch (Exception ex) { throw ex; } }
                 }
-                public void Disconnect()
+                public virtual void Disconnect()
                 {
                     if (Connected)
                     {
@@ -11444,23 +11429,23 @@ namespace CSharpExtendedCommands
                         ClientSocket.Close();
                     }
                 }
-                public int ReceiveTimeout { get => ClientSocket.ReceiveTimeout; set => ClientSocket.ReceiveTimeout = value; }
-                public int SendTimeout { get => ClientSocket.SendTimeout; set => ClientSocket.SendTimeout = value; }
-                public AddressFamily AddressFamily { get => ClientSocket.AddressFamily; }
-                public int Avaliable { get => ClientSocket.Available; }
-                public bool EnableBroadcast { get => ClientSocket.EnableBroadcast; set => ClientSocket.EnableBroadcast = value; }
+                public virtual int ReceiveTimeout { get => ClientSocket.ReceiveTimeout; set => ClientSocket.ReceiveTimeout = value; }
+                public virtual int SendTimeout { get => ClientSocket.SendTimeout; set => ClientSocket.SendTimeout = value; }
+                public virtual AddressFamily AddressFamily { get => ClientSocket.AddressFamily; }
+                public virtual int Avaliable { get => ClientSocket.Available; }
+                public virtual bool EnableBroadcast { get => ClientSocket.EnableBroadcast; set => ClientSocket.EnableBroadcast = value; }
 
-                public Stream ReceiveFile()
+                public virtual Stream ReceiveFile()
                 {
                     var package = ReceivePackage();
                     var buffer = package.Data;
                     return new MemoryStream(buffer);
                 }
-                public byte[] Receive()
+                public virtual byte[] Receive()
                 {
                     return Receive(2048);
                 }
-                public byte[] Receive(int bufferSize)
+                public virtual byte[] Receive(int bufferSize)
                 {
                     var buffer = new byte[bufferSize];
                     int received = ClientSocket.Receive(buffer, SocketFlags.None);
@@ -11469,19 +11454,19 @@ namespace CSharpExtendedCommands
                     Array.Copy(buffer, data, received);
                     return data;
                 }
-                public void SendPackage(TcpPackage package)
+                public virtual void SendPackage(TcpPackage package)
                 {
                     ClientSocket.Send(package.RawData, package.Size + 8, SocketFlags.None);
                 }
-                public void SendPackage(TcpPackage package, SocketFlags flags)
+                public virtual void SendPackage(TcpPackage package, SocketFlags flags)
                 {
                     ClientSocket.Send(package.RawData, package.Size + 8, flags);
                 }
-                public void SendPackage(TcpPackage package, SocketFlags flags, out SocketError errorCode)
+                public virtual void SendPackage(TcpPackage package, SocketFlags flags, out SocketError errorCode)
                 {
                     ClientSocket.Send(package.RawData, 0, package.Size + 8, flags, out errorCode);
                 }
-                public byte[] ReceiveExact(int size)
+                public virtual byte[] ReceiveExact(int size)
                 {
                     int mustReceive = size;
                     byte[] buffer;
@@ -11500,7 +11485,7 @@ namespace CSharpExtendedCommands
                     }
                     return data.ToArray();
                 }
-                public TcpPackage ReceivePackage()
+                public virtual TcpPackage ReceivePackage()
                 {
                     byte[] buffer;
                     int mustReceive = 8;
@@ -11535,51 +11520,51 @@ namespace CSharpExtendedCommands
                     }
                     return new TcpPackage(data.ToArray());
                 }
-                public string ReceiveString()
+                public virtual string ReceiveString()
                 {
                     return ReceiveString(2048);
                 }
-                public string ReceiveString(int bufferSize)
+                public virtual string ReceiveString(int bufferSize)
                 {
                     string text = Encoding.ASCII.GetString(Receive(bufferSize));
                     return text;
                 }
-                public int Send(byte[] buffer)
+                public virtual int Send(byte[] buffer)
                 {
                     return ClientSocket.Send(buffer);
                 }
-                public int Send(byte[] buffer, SocketFlags flags)
+                public virtual int Send(byte[] buffer, SocketFlags flags)
                 {
                     return ClientSocket.Send(buffer, flags);
                 }
-                public int Send(byte[] buffer, int size, SocketFlags flags)
+                public virtual int Send(byte[] buffer, int size, SocketFlags flags)
                 {
                     return ClientSocket.Send(buffer, size, flags);
                 }
-                public int Send(byte[] buffer, int offset, int size, SocketFlags flags)
+                public virtual int Send(byte[] buffer, int offset, int size, SocketFlags flags)
                 {
                     return ClientSocket.Send(buffer, offset, size, flags);
                 }
-                public int Send(byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                public virtual int Send(byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
                 {
                     return ClientSocket.Send(buffer, offset, size, flags, out errorCode);
                 }
-                public int SendString(string text)
+                public virtual int SendString(string text)
                 {
                     return Send(Encoding.ASCII.GetBytes(text));
                 }
-                public void SendFile(string file, SocketFlags flags, out SocketError errorCode)
+                public virtual void SendFile(string file, SocketFlags flags, out SocketError errorCode)
                 {
                     var reader = new BinaryReader(File.OpenRead(file));
                     var buffer = reader.ReadBytes((int)reader.BaseStream.Length);
                     reader.Close();
                     SendPackage(new TcpPackage(buffer), flags, out errorCode);
                 }
-                public void SendFile(string file, SocketFlags flags)
+                public virtual void SendFile(string file, SocketFlags flags)
                 {
                     SendFile(file, flags, out SocketError _);
                 }
-                public void SendFile(string file)
+                public virtual void SendFile(string file)
                 {
                     SendFile(file, SocketFlags.None, out SocketError _);
                 }
@@ -11654,13 +11639,13 @@ namespace CSharpExtendedCommands
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
-                public bool Running { get; private set; }
+                public virtual bool Running { get; private set; }
                 readonly List<TCPClient> clients = new List<TCPClient>();
-                public TCPClient[] ConnectedClients { get => clients.ToArray(); }
+                public virtual TCPClient[] ConnectedClients { get => clients.ToArray(); }
                 public Socket ServerSocket { get; private set; }
-                public bool BeginReceiveOnConnection { get; set; } = true;
-                public bool AutoRelistenForMessages { get; set; } = true;
-                public int PacketBufferSize { get => buffer.Length; set => buffer = new byte[value]; }
+                public virtual bool BeginReceiveOnConnection { get; set; } = true;
+                public virtual bool AutoRelistenForMessages { get; set; } = true;
+                public virtual int PacketBufferSize { get => buffer.Length; set => buffer = new byte[value]; }
                 void Setup()
                 {
                     clients.Clear();
@@ -11668,7 +11653,7 @@ namespace CSharpExtendedCommands
                     ServerSocket.Bind(new IPEndPoint(IPAddress.Any, Port));
                 }
                 private byte[] buffer = new byte[2048];
-                public void Shutdown()
+                public virtual void Shutdown()
                 {
                     foreach (var client in ConnectedClients)
                         DisconnectClient(client, "Server shutdown.");
@@ -11686,11 +11671,6 @@ namespace CSharpExtendedCommands
                     var c = new TCPClient(client);
                     clients.Add(c);
                     return c;
-                }
-                public enum DataReceiveType
-                {
-                    Normal,
-                    TcpPackage
                 }
                 private void OnClientDataReceived(IAsyncResult data)
                 {
@@ -11715,40 +11695,40 @@ namespace CSharpExtendedCommands
                     if (AutoRelistenForMessages)
                         try { current.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, current); } catch { }
                 }
-                public void SendPackageToClient(TCPClient client, TcpPackage package)
+                public virtual void SendPackageToClient(TCPClient client, TcpPackage package)
                 {
                     client.SendPackage(package);
                 }
-                public byte[] ReceiveExactFromClient(TCPClient client, int size)
+                public virtual byte[] ReceiveExactFromClient(TCPClient client, int size)
                 {
                     return client.ReceiveExact(size);
                 }
-                public TcpPackage ReceivePackageFromClient(TCPClient client)
+                public virtual TcpPackage ReceivePackageFromClient(TCPClient client)
                 {
                     return client.ReceivePackage();
                 }
-                public int[] Broadcast(byte[] buffer)
+                public virtual int[] Broadcast(byte[] buffer)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
                         returns.Add(SendToClient(c, buffer, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, int size)
+                public virtual int[] Broadcast(byte[] buffer, int size)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
                         returns.Add(SendToClient(c, buffer, size, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, int offset, int size)
+                public virtual int[] Broadcast(byte[] buffer, int offset, int size)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
                         returns.Add(SendToClient(c, buffer, offset, size, SocketFlags.Broadcast));
                     return returns.ToArray();
                 }
-                public int[] Broadcast(byte[] buffer, int offset, int size, out SocketError[] errorCodes)
+                public virtual int[] Broadcast(byte[] buffer, int offset, int size, out SocketError[] errorCodes)
                 {
                     List<int> returns = new List<int>();
                     List<SocketError> errors = new List<SocketError>();
@@ -11760,73 +11740,73 @@ namespace CSharpExtendedCommands
                     errorCodes = errors.ToArray();
                     return returns.ToArray();
                 }
-                public int[] BroadcastString(string text)
+                public virtual int[] BroadcastString(string text)
                 {
                     List<int> returns = new List<int>();
                     foreach (var c in clients)
                         returns.Add(SendStringToClient(c, text));
                     return returns.ToArray();
                 }
-                public void BroadcastFile(string file)
+                public virtual void BroadcastFile(string file)
                 {
                     foreach (var c in clients)
                         SendFileToClient(c, file);
                 }
-                public void BroadcastFile(string file, out SocketError[] errorCode)
+                public virtual void BroadcastFile(string file, out SocketError[] errorCode)
                 {
                     List<SocketError> errorCodes = new List<SocketError>();
                     foreach (var c in clients)
                     { SendFileToClient(c, file, SocketFlags.Broadcast, out SocketError error); errorCodes.Add(error); }
                     errorCode = errorCodes.ToArray();
                 }
-                public void BroadcastFile(string file, SocketFlags flags, out SocketError[] errorCode)
+                public virtual void BroadcastFile(string file, SocketFlags flags, out SocketError[] errorCode)
                 {
                     List<SocketError> errorCodes = new List<SocketError>();
                     foreach (var c in clients)
                     { SendFileToClient(c, file, flags, out SocketError error); errorCodes.Add(error); }
                     errorCode = errorCodes.ToArray();
                 }
-                public int SendToClient(TCPClient client, byte[] buffer)
+                public virtual int SendToClient(TCPClient client, byte[] buffer)
                 {
                     return client.Send(buffer);
                 }
-                public int SendToClient(TCPClient client, byte[] buffer, SocketFlags flags)
+                public virtual int SendToClient(TCPClient client, byte[] buffer, SocketFlags flags)
                 {
                     return client.Send(buffer, flags);
                 }
-                public int SendToClient(TCPClient client, byte[] buffer, int size, SocketFlags flags)
+                public virtual int SendToClient(TCPClient client, byte[] buffer, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, size, flags);
                 }
-                public int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags)
+                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, offset, size, flags);
                 }
-                public int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
                 {
                     return client.Send(buffer, offset, size, flags, out errorCode);
                 }
-                public int SendStringToClient(TCPClient client, string text)
+                public virtual int SendStringToClient(TCPClient client, string text)
                 {
                     return SendToClient(client, Encoding.ASCII.GetBytes(text));
                 }
-                public void SendFileToClient(TCPClient client, string fileName)
+                public virtual void SendFileToClient(TCPClient client, string fileName)
                 {
                     client.SendFile(fileName);
                 }
-                public void SendFileToClient(TCPClient client, string fileName, SocketFlags flags)
+                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags)
                 {
                     client.SendFile(fileName, flags, out SocketError _);
                 }
-                public void SendFileToClient(TCPClient client, string fileName, SocketFlags flags, out SocketError errorCode)
+                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags, out SocketError errorCode)
                 {
                     client.SendFile(fileName, flags, out errorCode);
                 }
-                private void RefuseConnection(ClientConnectionArgs e)
+                internal virtual void OnRefuseConnection(ClientConnectionArgs e)
                 {
                     DisconnectClient(e.Client, "Connection refused!");
                 }
-                private void OnClientConnection(IAsyncResult request)
+                internal virtual void OnClientConnection(IAsyncResult request)
                 {
                     if (ClientTryConnect != null)
                     {
@@ -11844,7 +11824,7 @@ namespace CSharpExtendedCommands
                             ServerSocket.BeginAccept(OnClientConnection, null);
                         }
                         else
-                            RefuseConnection(args);
+                            OnRefuseConnection(args);
                     }
                     else
                     {
