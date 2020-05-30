@@ -11672,7 +11672,7 @@ namespace CSharpExtendedCommands
                     clients.Add(c);
                     return c;
                 }
-                private void OnClientDataReceived(IAsyncResult data)
+                internal virtual void OnClientDataReceived(IAsyncResult data)
                 {
                     Socket current = (Socket)data.AsyncState;
                     int received;
@@ -11853,32 +11853,32 @@ namespace CSharpExtendedCommands
 
                     public bool CompletedSynchronously { get; set; }
                 }
-                public void DisconnectClient(TCPClient client)
+                public virtual void DisconnectClient(TCPClient client)
                 {
                     try { client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
                     try { client.ClientSocket.Close(); } catch { }
                     RemoveClient(client.ClientSocket);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, "Manual Disconnection through 'Server.DisconnectClient()'"));
                 }
-                public void DisconnectClient(TCPClient client, string msg)
+                public virtual void DisconnectClient(TCPClient client, string msg)
                 {
                     try { client.ClientSocket.Send(Encoding.ASCII.GetBytes(msg)); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
                     try { client.ClientSocket.Close(); } catch { }
                     RemoveClient(client.ClientSocket);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, msg));
                 }
-                public void BeginReceive(int clientIndex)
+                public virtual void BeginReceive(int clientIndex)
                 {
                     BeginReceive(clients[clientIndex]);
                 }
-                public void BeginReceive(TCPClient client)
+                public virtual void BeginReceive(TCPClient client)
                 {
                     if (clients.Contains(client))
                         client.ClientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
                     else
                         throw new Exception("Client is either not connected or not been listed correctly!");
                 }
-                public void Start()
+                public virtual void Start()
                 {
                     ServerSocket.Listen(0);
                     ServerSocket.BeginAccept(OnClientConnection, null);
@@ -11886,7 +11886,7 @@ namespace CSharpExtendedCommands
                 }
                 public IPAddress Ip { get; set; }
                 public ushort Port { get; set; }
-                private void OnClientConnectionFailed(Socket client, string msg = null)
+                internal virtual void OnClientConnectionFailed(Socket client, string msg = null)
                 {
                     ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(new TCPClient(client), msg == null ? "" : msg));
                 }
