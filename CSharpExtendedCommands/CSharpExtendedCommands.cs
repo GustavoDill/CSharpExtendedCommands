@@ -11441,6 +11441,48 @@ namespace CSharpExtendedCommands
                     var buffer = package.Data;
                     return new MemoryStream(buffer);
                 }
+                public virtual void ReceiveFile(string destPath)
+                {
+                    byte[] buffer;
+                    int mustReceive = 8;
+                    List<byte> data = new List<byte>();
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[mustReceive];
+                        var rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    string sizeData = Encoding.ASCII.GetString(data.ToArray());
+                    data.Clear();
+                    var size = Convert.ToInt32("0x" + sizeData, 16);
+                    mustReceive = size;
+                    if (mustReceive == 0)
+                        return;
+                    BinaryWriter writer = new BinaryWriter(File.OpenWrite(destPath));
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[2048];
+                        int rec;
+                        if (mustReceive > 2048)
+                            rec = ClientSocket.Receive(buffer, 2048, SocketFlags.None);
+                        else
+                            rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            writer.Write(copy);
+                        }
+                    }
+                    writer.Close();
+                }
                 public virtual byte[] Receive()
                 {
                     return Receive(2048);
@@ -11484,6 +11526,45 @@ namespace CSharpExtendedCommands
                         }
                     }
                     return data.ToArray();
+                }
+                public virtual TcpPackage ReceivePackage(int receiveBytesRate)
+                {
+                    byte[] buffer;
+                    int mustReceive = 8;
+                    List<byte> data = new List<byte>();
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[mustReceive];
+                        var rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    string sizeData = Encoding.ASCII.GetString(data.ToArray());
+                    var size = Convert.ToInt32("0x" + sizeData, 16);
+                    data.Clear();
+                    mustReceive = size;
+                    while (mustReceive != 0)
+                    {
+                        buffer = new byte[receiveBytesRate];
+                        int rec;
+                        if (mustReceive >= receiveBytesRate)
+                            rec = ClientSocket.Receive(buffer, receiveBytesRate, SocketFlags.None);
+                        else
+                            rec = ClientSocket.Receive(buffer, mustReceive, SocketFlags.None);
+                        mustReceive -= rec;
+                        if (rec != 0)
+                        {
+                            byte[] copy = new byte[rec];
+                            Array.Copy(buffer, copy, rec);
+                            data.AddRange(copy);
+                        }
+                    }
+                    return new TcpPackage(data.ToArray());
                 }
                 public virtual TcpPackage ReceivePackage()
                 {
