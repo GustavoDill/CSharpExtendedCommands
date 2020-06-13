@@ -1,4 +1,5 @@
-﻿using CSharpExtendedCommands.DataTypeExtensions;
+﻿using CSharpExtendedCommands.Data.SimpleJSON;
+using CSharpExtendedCommands.DataTypeExtensions;
 using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
 using Microsoft.CSharp;
 using System;
@@ -12781,6 +12782,16 @@ namespace CSharpExtendedCommands
     }
     namespace DataTypeExtensions
     {
+        namespace Json
+        {
+            public static class JSONExtensions
+            {
+                public static void AddTuple(this JSONNode json, string key, string value)
+                {
+                    json.Add(key, JSON.Parse($"{{\"{key}\" : \"{value}\"}}")[key]);
+                }
+            }
+        }
         namespace UI
         {
             public static class UIClassExtensions
@@ -15930,6 +15941,7 @@ namespace CSharpExtendedCommands
             public static class JSON
             {
                 // Token: 0x06000A3B RID: 2619 RVA: 0x00043475 File Offset: 0x00041875
+                public static JSONNode Empty => JSON.Parse("{}");
                 public static JSONNode Parse(string aJSON)
                 {
                     return JSONNode.Parse(aJSON);
