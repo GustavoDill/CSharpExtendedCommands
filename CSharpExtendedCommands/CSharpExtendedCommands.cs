@@ -36,94 +36,94 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    //namespace UI.Graphics
-    //{
-    //    public static partial class ManipulateObject
-    //    {
-    //        public static void CenterFormInScreen(Form frm)
-    //        {
-    //            int frmW = frm.Size.Width;
-    //            int frmH = frm.Size.Height;
-    //            int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
-    //            int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
-    //            frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
-    //        }
-    //    }
-    //}
-    //namespace Info
-    //{
-    //    public static partial class ComputerInfo
-    //    {
-    //        public static string OSFullName()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSFullName;
-    //        }
-    //        public static ulong GetAvailablePhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailablePhysicalMemory;
-    //        }
-    //        public static ulong GetAvailableVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailableVirtualMemory;
-    //        }
-    //        public static System.Globalization.CultureInfo InstalledLanguage()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.InstalledUICulture;
-    //        }
-    //        public static string OsPlatform()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSPlatform;
-    //        }
-    //        public static string OsVersion()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSVersion;
-    //        }
-    //        public static ulong GetTotalPhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalPhysicalMemory;
-    //        }
-    //        public static ulong GetTotalVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalVirtualMemory;
-    //        }
-    //        public static int ScreenWidth()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Screen.Bounds.Width;
-    //        }
-    //        public static int ScreenHeight()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
-    //        }
-    //    }
-    //}
-    //namespace IO
-    //{
-    //    public static class FileSystem
-    //    {
-    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-    //        {
-    //            var shell = new IWshRuntimeLibrary.WshShell();
-    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-    //            shortcut.TargetPath = ExePath;
-    //            if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-    //            shortcut.Save();
-    //        }
-    //    }
-    //}
+    namespace UI.Graphics
+    {
+        public static partial class ManipulateObject
+        {
+            public static void CenterFormInScreen(Form frm)
+            {
+                int frmW = frm.Size.Width;
+                int frmH = frm.Size.Height;
+                int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
+                int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
+                frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
+            }
+        }
+    }
+    namespace Info
+    {
+        public static partial class ComputerInfo
+        {
+            public static string OSFullName()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSFullName;
+            }
+            public static ulong GetAvailablePhysicalMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.AvailablePhysicalMemory;
+            }
+            public static ulong GetAvailableVirtualMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.AvailableVirtualMemory;
+            }
+            public static System.Globalization.CultureInfo InstalledLanguage()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.InstalledUICulture;
+            }
+            public static string OsPlatform()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSPlatform;
+            }
+            public static string OsVersion()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.OSVersion;
+            }
+            public static ulong GetTotalPhysicalMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.TotalPhysicalMemory;
+            }
+            public static ulong GetTotalVirtualMemory()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Info.TotalVirtualMemory;
+            }
+            public static int ScreenWidth()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return computerInfo.Screen.Bounds.Width;
+            }
+            public static int ScreenHeight()
+            {
+                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+                return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
+            }
+        }
+    }
+    namespace IO
+    {
+        public static class FileSystem
+        {
+            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+            {
+                var shell = new IWshRuntimeLibrary.WshShell();
+                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+                shortcut.TargetPath = ExePath;
+                if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+                shortcut.Save();
+            }
+        }
+    }
     namespace Web
     {
         namespace HtmlAgilityPack
@@ -11424,11 +11424,58 @@ namespace CSharpExtendedCommands
                 }
                 public virtual void Disconnect()
                 {
+                    Disconnect(true);
+                }
+                public virtual void Shutdown()
+                {
+                    Shutdown(SocketShutdown.Both);
+                }
+                public virtual void Shutdown(SocketShutdown shutdown)
+                {
                     if (Connected)
                     {
-                        ClientSocket.Shutdown(SocketShutdown.Both);
+                        ClientSocket.Shutdown(shutdown);
+                    }
+                }
+                public virtual void ShutdownAndClose()
+                {
+                    ShutdownAndClose(SocketShutdown.Both);
+                }
+                public virtual void ShutdownAndClose(SocketShutdown shutdown)
+                {
+                    if (Connected)
+                    {
+                        ClientSocket.Shutdown(shutdown);
                         ClientSocket.Close();
                     }
+                }
+                public virtual void BeginConnect(AsyncCallback callback, object state)
+                {
+                    ClientSocket.BeginConnect(Ip, Port, callback, state);
+                }
+                public virtual void BeginConnect(AsyncCallback callback)
+                {
+                    BeginConnect(callback, null);
+                }
+                public virtual void EndConnect(IAsyncResult result)
+                {
+                    ClientSocket.EndConnect(result);
+                }
+                public virtual void Disconnect(bool reuseSocket)
+                {
+                    ClientSocket.Disconnect(reuseSocket);
+                }
+                public virtual void EndDisconnect(IAsyncResult result)
+                {
+                    ClientSocket.EndDisconnect(result);
+                }
+                public virtual void BeginDisconnect(bool reuseSocket, AsyncCallback callback)
+                {
+                    BeginDisconnect(reuseSocket, callback);
+                }
+                public virtual void BeginDisconnect(bool reuseSocket, AsyncCallback callback, object state)
+                {
+                    ClientSocket.BeginDisconnect(reuseSocket, callback, state);
                 }
                 public virtual int ReceiveTimeout { get => ClientSocket.ReceiveTimeout; set => ClientSocket.ReceiveTimeout = value; }
                 public virtual int SendTimeout { get => ClientSocket.SendTimeout; set => ClientSocket.SendTimeout = value; }
@@ -11670,30 +11717,8 @@ namespace CSharpExtendedCommands
             }
             public class TCPServer
             {
-                public TCPServer(string hostName, ushort port = 0, int addressListIndex = 0)
+                public TCPServer(ushort port = 0, int addressListIndex = 0)
                 {
-                    Ip = Dns.GetHostAddresses(hostName)[addressListIndex];
-                    if (port != 0)
-                        Port = port;
-                    else
-                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
-                    Setup();
-                }
-                public TCPServer(string ip, ushort port = 0)
-                {
-                    if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
-                        Ip = IPAddress.Parse(ip);
-                    else
-                        Ip = IPAddress.Parse("127.0.0.1");
-                    if (port != 0)
-                        Port = port;
-                    else
-                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
-                    Setup();
-                }
-                public TCPServer(IPAddress ip, ushort port = 0)
-                {
-                    Ip = ip;
                     if (port != 0)
                         Port = port;
                     else
@@ -11706,18 +11731,10 @@ namespace CSharpExtendedCommands
                         Port = port;
                     else
                         Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
-                    Ip = IPAddress.Parse("127.0.0.1");
-                    Setup();
-                }
-                public TCPServer(IPAddress ip)
-                {
-                    Ip = ip;
-                    Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
                 public TCPServer()
                 {
-                    Ip = IPAddress.Parse("127.0.0.1");
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
@@ -11956,7 +11973,6 @@ namespace CSharpExtendedCommands
                     ServerSocket.BeginAccept(OnClientConnection, null);
                     Running = true;
                 }
-                public IPAddress Ip { get; set; }
                 public ushort Port { get; set; }
                 internal virtual void OnClientConnectionFailed(Socket client, string msg = null)
                 {
