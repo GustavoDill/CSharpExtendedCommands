@@ -101,7 +101,6 @@
     <Compile Include="Dialogs\Main.Designer.cs">
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\RemoteDesktop.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

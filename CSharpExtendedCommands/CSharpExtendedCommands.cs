@@ -1,6 +1,7 @@
 ﻿using CSharpExtendedCommands.Data.SimpleJSON;
 using CSharpExtendedCommands.DataTypeExtensions;
 using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
+using CSharpExtendedCommands.Info;
 using Microsoft.CSharp;
 using System;
 using System.CodeDom.Compiler;
@@ -11284,6 +11285,119 @@ namespace CSharpExtendedCommands
         }
         namespace Communication
         {
+            public class RemoteDesktop
+            {
+                public OperationMode Mode { get; private set; }
+                public RemoteDesktopPorts Ports { get; private set; }
+                public IPAddress Ip { get; private set; }
+
+                public struct RemoteDesktopPorts
+                {
+                    public RemoteDesktopPorts(ushort viewerPort)
+                    {
+                        ViewerPort = viewerPort;
+                    }
+                    public ushort ViewerPort { get; set; }
+                }
+                public enum OperationMode
+                {
+                    Client,
+                    Server
+                }
+                public void Constructor(OperationMode mode, IPAddress ip, RemoteDesktopPorts ports)
+                {
+                    Mode = mode;
+                    Ip = ip;
+                    Ports = ports;
+                }
+                public RemoteDesktop(OperationMode mode, string ip, RemoteDesktopPorts ports)
+                {
+                    Constructor(mode, IPAddress.Parse(ip), ports);
+                }
+                public RemoteDesktop(OperationMode mode, RemoteDesktopPorts ports)
+                {
+                    Constructor(mode, null, ports);
+                }
+                public RemoteDesktopViewer Viewer { get; private set; }
+                public void InitializeViewer()
+                {
+                    switch (Mode)
+                    {
+                        case OperationMode.Client:
+                            Viewer = new RemoteDesktopViewer(Mode, Ip, Ports.ViewerPort);
+                            break;
+                        case OperationMode.Server:
+                            Viewer = new RemoteDesktopViewer(Mode, Ports.ViewerPort);
+                            Viewer.ViewDesktop += delegate (Image img) { ViewDesktop?.Invoke(img); };
+                            break;
+                    }
+                }
+                public event RemoteDesktopViewer.ViewDesktopHandler ViewDesktop;
+
+                public class RemoteDesktopViewer
+                {
+                    TcpListener listener;
+                    TcpClient client;
+                    NetworkStream mainStream;
+                    Action Start;
+                    public void StartViewer()
+                    {
+                        Start.Invoke();
+                    }
+                    void Constructor(OperationMode mode, IPAddress ip, ushort port)
+                    {
+                        Mode = mode;
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        switch (mode)
+                        {
+                            case OperationMode.Client:
+                                client = new TcpClient();
+                                var t = new Thread(() =>
+                                {
+                                    client.Connect(ip, port);
+                                    while (client.Connected)
+                                    {
+                                        mainStream = client.GetStream();
+                                        formatter.Serialize(mainStream, ComputerInfo.Screenshot);
+                                    }
+
+                                });
+                                Start = () => { t.Start(); };
+                                break;
+                            case OperationMode.Server:
+                                listener = new TcpListener(port);
+                                var t2 = new Thread(() =>
+                                {
+                                    listener.Start();
+                                    var client = listener.AcceptTcpClient();
+                                    while (client.Connected)
+                                    {
+                                        mainStream = client.GetStream();
+                                        ViewDesktop?.Invoke((Image)formatter.Deserialize(mainStream));
+                                    }
+                                });
+                                Start = () => { t2.Start(); };
+                                break;
+                        }
+                    }
+                    public delegate void ViewDesktopHandler(Image desktopImage);
+                    public event ViewDesktopHandler ViewDesktop;
+                    public RemoteDesktopViewer(OperationMode mode, ushort port)
+                    {
+                        Constructor(mode, null, port);
+                    }
+                    public RemoteDesktopViewer(OperationMode mode, string host, ushort port)
+                    {
+                        Constructor(mode, Dns.GetHostAddresses(host)[0], port);
+                    }
+                    public RemoteDesktopViewer(OperationMode mode, IPAddress ip, ushort port)
+                    {
+                        Constructor(mode, ip, port);
+                    }
+
+                    public OperationMode Mode { get; private set; }
+                }
+            }
             public class TcpPackage
             {
                 public static TcpPackage FromRawData(params byte[] rawData)

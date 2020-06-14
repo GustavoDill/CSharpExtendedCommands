@@ -42,4 +42,3 @@ C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCo
 C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
 C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.dll
 C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.pdb
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csprojAssemblyReference.cache

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CSharpExtendedCommands.Web.Communication;
+using System;
 using System.Windows.Forms;
 
 namespace FormApp.Dialogs
@@ -9,7 +10,6 @@ namespace FormApp.Dialogs
         {
             InitializeComponent();
         }
-        RemoteDesktopClient client;
         RemoteDesktop remoteDesktop;
         private void button1_Click(object sender, EventArgs e)
         {

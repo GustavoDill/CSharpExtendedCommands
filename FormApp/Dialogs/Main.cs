@@ -47,9 +47,9 @@ namespace FormApp.Dialogs
                 pictureBox1.Image = (Image)formatter.Deserialize(mainStream);
             }
         }
-        private void Server_DisplayImage(object sender, RemoteDesktopServer.RemoteDesktopDisplayArgs e)
+        private void Server_DisplayImage(Image e)
         {
-            pictureBox1.Image = e.Image;
+            pictureBox1.Image = e;
         }
     }
 }
