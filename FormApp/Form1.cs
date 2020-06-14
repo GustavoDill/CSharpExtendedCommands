@@ -1,25 +1,12 @@
-﻿using System;
+﻿using CSharpExtendedCommands;
 using CSharpExtendedCommands.Data;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using CSharpExtendedCommands.IO;
-using System.Diagnostics;
 using CSharpExtendedCommands.Data.SimpleJSON;
-using static CSharpExtendedCommands.Maths;
-using CSharpExtendedCommands.DataTypeExtensions;
-using System.IO;
-using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
-using System.Text.RegularExpressions;
-using CSharpExtendedCommands.Web;
-using CSharpExtendedCommands;
-using System.Threading;
 using CSharpExtendedCommands.DataTypeExtensions.UI;
-using System.Reflection;
+using FormApp.Dialogs;
+using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace FormApp
 {
@@ -131,26 +118,44 @@ namespace FormApp
             sender.GetType().GetProperty("Width").SetValue(sender, 500, null);
         }
 
+        Form cl = new Client();
+        Form m = new Main();
         private void button6_Click(object sender, EventArgs e)
         {
-            panel1.MouseEnter += h;
-            panel1.MouseLeave += o;
+            m.FormClosed += M_FormClosed;
+            cl.FormClosed += Cl_FormClosed;
+            m.Show();
+            cl.Show();
+            Hide();
+        }
+
+        private void M_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (((Form)sender).Visible && (cl.Visible))
+                Close();
+        }
+
+        private void Cl_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (((Form)sender).Visible && m.Visible)
+                Close();
         }
         void h(object sender, EventArgs e)
         {
             panel1.ChangeBGColorSmoothly(Color.Gray, 2);
             //new Thread(DoMeh).Start();
         }
-        void o(object sender ,EventArgs e)
+        void o(object sender, EventArgs e)
         {
             panel1.ChangeBGColorSmoothly(SystemColors.ActiveCaption, 2);
             //new Thread(DoMeo).Start();
         }
         void DoMeh()
-        {  } 
+        { }
         void DoMeo()
-        { var clr = SystemColors.ActiveCaption;
-           }
+        {
+            var clr = SystemColors.ActiveCaption;
+        }
         private void UploadComplete(object sender, ProgressChangedEventArgs e)
         {
             MessageBox.Show("Upload complete!");

@@ -102,3 +102,5 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csproj.CopyComplete
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.exe
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.pdb
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Client.resources
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Main.resources

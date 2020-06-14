@@ -11372,25 +11372,36 @@ namespace CSharpExtendedCommands
                 }
                 public TCPClient(string ip, ushort port = 0)
                 {
-                    if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
-                        Ip = IPAddress.Parse(ip);
-                    else
-                        Ip = IPAddress.Parse("127.0.0.1");
+                    var hosts = Dns.GetHostAddresses(ip);
+                    if (hosts.Length > 0)
+                        Ip = hosts[0];
                     if (port != 0)
                         Port = port;
                     else
                         Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
-                public TCPClient(IPAddress ip, ushort port = 0)
-                {
-                    Ip = ip;
-                    if (port != 0)
-                        Port = port;
-                    else
-                        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
-                    Setup();
-                }
+                //public TCPClient(string ip, ushort port = 0)
+                //{
+                //    if (!string.IsNullOrEmpty(ip) && Regex.IsMatch(ip, @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"))
+                //        Ip = IPAddress.Parse(ip);
+                //    else
+                //        Ip = IPAddress.Parse("127.0.0.1");
+                //    if (port != 0)
+                //        Port = port;
+                //    else
+                //        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                //    Setup();
+                //}
+                //public TCPClient(IPAddress ip, ushort port = 0)
+                //{
+                //    Ip = ip;
+                //    if (port != 0)
+                //        Port = port;
+                //    else
+                //        Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
+                //    Setup();
+                //}
                 public TCPClient(ushort port = 0)
                 {
                     if (port != 0)
@@ -11482,7 +11493,13 @@ namespace CSharpExtendedCommands
                 public virtual AddressFamily AddressFamily { get => ClientSocket.AddressFamily; }
                 public virtual int Avaliable { get => ClientSocket.Available; }
                 public virtual bool EnableBroadcast { get => ClientSocket.EnableBroadcast; set => ClientSocket.EnableBroadcast = value; }
-
+                private NetworkStream _stream;
+                public NetworkStream GetStream()
+                {
+                    if (_stream == null)
+                        _stream = new NetworkStream(ClientSocket, true);
+                    return _stream;
+                }
                 public virtual Stream ReceiveFile()
                 {
                     var package = ReceivePackage();
@@ -22610,6 +22627,17 @@ namespace CSharpExtendedCommands
         }
         public static partial class ComputerInfo
         {
+            public static Image Screenshot
+            {
+                get
+                {
+                    Rectangle bound = Screen.PrimaryScreen.Bounds;
+                    Bitmap bmp = new Bitmap(bound.Width, bound.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    Graphics graph = Graphics.FromImage(bmp);
+                    graph.CopyFromScreen(bound.X, bound.Y, 0, 0, bound.Size, CopyPixelOperation.SourceCopy);
+                    return bmp;
+                }
+            }
             public static string Name { get => Environment.MachineName; }
 
             public static IPAddress[] LocalAddressList
