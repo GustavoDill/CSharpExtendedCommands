@@ -13,7 +13,8 @@ namespace FormApp.Dialogs
         RemoteDesktop remoteDesktop;
         private void button1_Click(object sender, EventArgs e)
         {
-            remoteDesktop = new RemoteDesktop(RemoteDesktop.OperationMode.Client, "127.0.0.1", new RemoteDesktop.RemoteDesktopPorts(54782));
+            remoteDesktop = new RemoteDesktop(RemoteDesktop.OperationMode.Client, "127.0.0.1", new RemoteDesktop.RemoteDesktopPorts(54781, 54780));
+            //remoteDesktop.LoadCommunication();
             remoteDesktop.InitializeViewer();
             remoteDesktop.Viewer.StartViewer();
             //client = new RemoteDesktopClient();

@@ -11287,6 +11287,13 @@ namespace CSharpExtendedCommands
         {
             public class RemoteDesktop : PictureBox
             {
+                #region Communication
+                TcpListener sender;
+                TcpClient sender_client;
+                TcpClient receiver;
+                NetworkStream commStream;
+                BinaryFormatter binFormatter;
+                #endregion
                 #region Properties
                 public OperationMode Mode { get; set; }
                 public RemoteDesktopPorts Ports { get; set; }
@@ -11308,42 +11315,123 @@ namespace CSharpExtendedCommands
 
                 public struct RemoteDesktopPorts
                 {
-                    public RemoteDesktopPorts(ushort viewerPort)
+                    public RemoteDesktopPorts(ushort viewerPort, ushort communication)
                     {
                         ViewerPort = viewerPort;
+                        Communication = communication;
                     }
                     public ushort ViewerPort { get; set; }
+                    public ushort Communication { get; set; }
                 }
                 public enum OperationMode
                 {
                     Client,
                     Server
                 }
+                public void LoadCommunication()
+                {
+                    if (sender != null)
+                    {
+                        try { sender.Server.Shutdown(SocketShutdown.Both); } catch { }
+                        try { sender.Server.Close(); } catch { }
+                        try { sender.Server.Dispose(); } catch { }
+                    }
+                    if (receiver != null)
+                    {
+                        try { receiver.Client.Shutdown(SocketShutdown.Both); } catch { }
+                        try { receiver.Client.Close(); } catch { }
+                        try { receiver.Client.Dispose(); } catch { }
+                    }
+                    binFormatter = new BinaryFormatter();
+                    Thread t;
+                    switch (Mode)
+                    {
+                        case OperationMode.Client:
+                            receiver = new TcpClient(new IPEndPoint(Ip, Ports.Communication));
+                            receiver.Connect(new IPEndPoint(Ip, Ports.Communication));
+                            t = new Thread(ListenForMessages);
+                            workThreads.Add(t);
+                            t.Start();
+                            break;
+                        case OperationMode.Server:
+                            sender = new TcpListener(Ports.Communication);
+                            sender.Start();
+                            t = new Thread(ListenForClient);
+                            workThreads.Add(t);
+                            t.Start();
+                            break;
+                    }
+                }
+                List<Thread> workThreads = new List<Thread>();
+                public void ListenForClient()
+                {
+                    sender.AcceptTcpClient();
+                }
+                public void ListenForMessages()
+                {
+                    while (receiver.Connected)
+                    {
+                        try
+                        {
+                            commStream = receiver.GetStream();
+
+                        }
+                        catch { }
+                    }
+                }
                 public void StartRemoteDesktop()
                 {
                     if (!Initialized)
                         InitializeAll();
                     Viewer.StartViewer();
+                    Enabled = true;
+                }
+                bool Enabled { get; set; }
+                public void ShutdownRemoteDesktop()
+                {
+                    if (sender != null)
+                    {
+                        try { sender.Server.Shutdown(SocketShutdown.Both); } catch { }
+                        try { sender.Server.Close(); } catch { }
+                        try { sender.Server.Dispose(); } catch { }
+                    }
+                    if (receiver != null)
+                    {
+                        try { receiver.Client.Shutdown(SocketShutdown.Both); } catch { }
+                        try { receiver.Client.Close(); } catch { }
+                        try { receiver.Client.Dispose(); } catch { }
+                    }
+                    Viewer.ShutdownViewer();
                 }
                 public void StopRemoteDesktop()
                 {
+                    foreach (var t in workThreads)
+                        try { t.Abort(); } catch { }
                     Viewer.StopViewer();
+                    Enabled = false;
                 }
 
                 #region Events
                 internal virtual void OnDesktopViewUpdate(Image desktop)
                 {
+                    if (RemoteDesktopSize != desktop.Size)
+                        RemoteDesktopSize = desktop.Size;
                     Image = desktop;
+                    DesktopViewUpdated?.Invoke(this, EventArgs.Empty);
                 }
+                public event EventHandler DesktopViewUpdated;
                 #endregion
 
                 #region Initialization
                 Dictionary<string, bool> initializedMethods = new Dictionary<string, bool>();
                 public void InitializeAll()
                 {
+                    Dictionary<string, bool> tmpdict = new Dictionary<string, bool>();
                     foreach (var kv in initializedMethods)
+                        tmpdict.Add(kv.Key, kv.Value);
+                    foreach (var kv in tmpdict)
                         if (!kv.Value)
-                            InvokeMethod(kv.Key);
+                            InvokeMethod("Initialize" + kv.Key);
                 }
                 public void InitializeViewer()
                 {
@@ -11357,7 +11445,7 @@ namespace CSharpExtendedCommands
                             Viewer.ViewDesktop += OnDesktopViewUpdate;
                             break;
                     }
-                    initializedMethods.Add(MethodInfo.GetCurrentMethod().Name.Replace("Initialize", ""), true);
+                    initializedMethods[MethodInfo.GetCurrentMethod().Name.Replace("Initialize", "")] = true;
                 }
                 private string[] _inits;
 
@@ -11379,13 +11467,18 @@ namespace CSharpExtendedCommands
                     Mode = mode;
                     Ip = ip;
                     Ports = ports;
-                    List<string> inits = new List<string>();
-                    var m = this.GetType().GetMethods();
-                    foreach (var met in m)
-                        if (met.Name.StartsWith("Initialize"))
-                            inits.Add(met.Name.Replace("Initialize", ""));
-                    Initializations = inits.ToArray();
+                    SizeMode = PictureBoxSizeMode.Zoom;
+                    MouseClick += RemoteDesktop_MouseClick;
+                    initializedMethods.Add("Viewer", false);
                 }
+
+                #region EventHandlers
+                private void RemoteDesktop_MouseClick(object sender, MouseEventArgs e)
+                {
+
+                }
+                #endregion
+
                 public RemoteDesktop(OperationMode mode, string ip, RemoteDesktopPorts ports)
                 {
                     Constructor(mode, IPAddress.Parse(ip), ports);
@@ -11396,7 +11489,7 @@ namespace CSharpExtendedCommands
                 }
                 public RemoteDesktop()
                 {
-                    Constructor(OperationMode.Server, null, new RemoteDesktopPorts(54782));
+                    Constructor(OperationMode.Server, null, new RemoteDesktopPorts(54781, 54780));
                 }
                 #endregion
                 [Browsable(false)]
@@ -11406,7 +11499,6 @@ namespace CSharpExtendedCommands
                 #region DesktopViewer
                 [Browsable(false)]
                 public RemoteDesktopViewer Viewer { get; private set; }
-                public event RemoteDesktopViewer.ViewDesktopHandler ViewDesktop;
                 public class RemoteDesktopViewer
                 {
                     TcpListener listener;
@@ -11414,13 +11506,21 @@ namespace CSharpExtendedCommands
                     NetworkStream mainStream;
                     Action Start;
                     Action Stop;
+                    Action ThreadRun;
+                    Action Shutdown;
                     public void StartViewer()
                     {
-                        Start.Invoke();
+                        Enabled = true;
+                        //new Thread(() => Start.Invoke()).Start();
                     }
                     public void StopViewer()
                     {
-                        Stop.Invoke();
+                        Enabled = false;
+                        //new Thread(() => Stop.Invoke()).Start();
+                    }
+                    public void ShutdownViewer()
+                    {
+                        Shutdown.Invoke();
                     }
                     BinaryFormatter formatter = new BinaryFormatter();
                     public Thread MainViewerThread { get; private set; }
@@ -11433,58 +11533,105 @@ namespace CSharpExtendedCommands
                         switch (Mode)
                         {
                             case OperationMode.Client:
-                                client = new TcpClient();
-                                MainViewerThread = new Thread(() =>
+                                ThreadRun = () =>
                                 {
                                     while (client.Connected)
                                     {
-                                        mainStream = client.GetStream();
-                                        formatter.Serialize(mainStream, ComputerInfo.Screenshot);
+                                        try
+                                        {
+                                            if (Enabled)
+                                            {
+                                                mainStream = client.GetStream();
+                                                formatter.Serialize(mainStream, ComputerInfo.Screenshot);
+                                            }
+                                        }
+                                        catch { }
                                     }
-                                });
-                                Start = () =>
+                                };
+                                new Thread(() =>
                                 {
+                                    client = new TcpClient(new IPEndPoint(Ip, Port));
+                                    MainViewerThread = new Thread(new ThreadStart(ThreadRun));
                                     if (!client.Connected)
                                         client.Connect(Ip, Port);
                                     if (!MainViewerThread.IsAlive)
                                         MainViewerThread.Start();
+                                }).Start();
+                                Start = () =>
+                                {
+                                    Enabled = true;
                                 };
                                 Stop = () =>
+                                {
+                                    Enabled = false;
+                                };
+                                Shutdown = () =>
                                 {
                                     if (MainViewerThread.IsAlive)
                                         MainViewerThread.Abort();
-                                    client.Client.Disconnect(true);
+                                    try { client.Client.Shutdown(SocketShutdown.Both); } catch { }
+                                    try { client.Client.Close(); } catch { }
+                                    try { client.Client.Dispose(); } catch { }
                                 };
                                 break;
                             case OperationMode.Server:
-                                MainViewerThread = new Thread(() =>
-                                {
-                                    while (client.Connected)
-                                    {
-                                        mainStream = client.GetStream();
-                                        ViewDesktop?.Invoke((Image)formatter.Deserialize(mainStream));
-                                    }
-                                });
-                                Start = () =>
+                                //ThreadRun = (IAsyncResult result) =>
+                                //{
+                                //    while (client.Connected)
+                                //    {
+                                //        try
+                                //        {
+                                //            if (Enabled)
+                                //            {
+                                //                mainStream = client.GetStream();
+                                //                ViewDesktop?.Invoke((Image)formatter.Deserialize(mainStream));
+                                //            }
+                                //        }
+                                //        catch { }
+                                //    }
+                                //};
+                                new Thread(() =>
                                 {
                                     listener = new TcpListener(Port);
                                     listener.Start();
-                                    var client = listener.AcceptTcpClient();
-                                    if (!MainViewerThread.IsAlive)
-                                        MainViewerThread.Start();
+                                     listener.BeginAcceptTcpClient(delegate (IAsyncResult result)
+                                    {
+                                        client = listener.EndAcceptTcpClient(result);
+                                        while (client.Connected)
+                                        {
+                                            try
+                                            {
+                                                if (Enabled)
+                                                {
+                                                    mainStream = client.GetStream();
+                                                    ViewDesktop?.Invoke((Image)formatter.Deserialize(mainStream));
+                                                }
+                                            }
+                                            catch { }
+                                        }
+                                    }, null);
+                                }).Start();
+                                Start = () =>
+                                {
+                                    Enabled = true;
                                 };
                                 Stop = () =>
+                                {
+                                    Enabled = false;
+                                };
+                                Shutdown = () =>
                                 {
                                     if (MainViewerThread.IsAlive)
                                         MainViewerThread.Abort();
                                     listener.Stop();
-                                    listener.Server.Shutdown(SocketShutdown.Both);
-                                    listener.Server.Close();
-                                    listener.Server.Dispose();
+                                    try { listener.Server.Shutdown(SocketShutdown.Both); } catch { }
+                                    try { listener.Server.Close(); } catch { }
+                                    try { listener.Server.Dispose(); } catch { }
                                 };
                                 break;
                         }
                     }
+                    private bool Enabled { get; set; }
                     public RemoteDesktopViewer(OperationMode mode, ushort port)
                     {
                         Constructor(mode, null, port);

@@ -89,6 +89,7 @@
     <Compile Include="Animated Button.Designer.cs">
       <DependentUpon>Animated Button.cs</DependentUpon>
     </Compile>
+    <Compile Include="CSharpExtendedCommands.cs" />
     <Compile Include="Dialogs\Client.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -158,12 +159,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CSharpExtendedCommands\CSharpExtendedCommands.csproj">
-      <Project>{5f68ba61-df32-4cf6-ab2c-b788f25541e1}</Project>
-      <Name>CSharpExtendedCommands</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ButtonMouseDown.png" />

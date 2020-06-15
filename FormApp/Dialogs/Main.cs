@@ -1,9 +1,4 @@
-﻿using CSharpExtendedCommands.Web.Communication;
-using System.Drawing;
-using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace FormApp.Dialogs
 {
@@ -12,10 +7,7 @@ namespace FormApp.Dialogs
         public Main()
         {
             InitializeComponent();
-            remoteDesktop = new RemoteDesktop(RemoteDesktop.OperationMode.Server, new RemoteDesktop.RemoteDesktopPorts(54782));
-            remoteDesktop.InitializeViewer();
-            remoteDesktop.Viewer.StartViewer();
-            remoteDesktop.ViewDesktop += RemoteDesktop_ViewDesktop;
+
             //server = new RemoteDesktopServer();
             //server.DisplayImage += Server_DisplayImage;
             //server.Display += Server_Display;
@@ -23,33 +15,22 @@ namespace FormApp.Dialogs
             //{
             //    new Thread(() => server.StartListening(54782)).Start();
             //};
+            new Client().Show();
         }
 
-        private void RemoteDesktop_ViewDesktop(Image desktopImage)
+        private void toolStripMenuItem1_Click(object sender, System.EventArgs e)
         {
-            pictureBox1.Image = desktopImage;
+            remoteDesktop1.StartRemoteDesktop();
+            //remoteDesktop1.LoadCommunication();
+        }
+        private void sTopToolStripMenuItem_Click(object sender, System.EventArgs e)
+        {
+            remoteDesktop1.StopRemoteDesktop();
         }
 
-        RemoteDesktop remoteDesktop;
-
-        private NetworkStream mainStream;
-        private void Server_Display(TCPClient client)
+        private void pauseViewToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            new Thread(new ParameterizedThreadStart(Display)).Start(client);
-        }
-        void Display(object p)
-        {
-            var ct = (TCPClient)p;
-            BinaryFormatter formatter = new BinaryFormatter();
-            while (ct.Connected)
-            {
-                mainStream = ct.GetStream();
-                pictureBox1.Image = (Image)formatter.Deserialize(mainStream);
-            }
-        }
-        private void Server_DisplayImage(Image e)
-        {
-            pictureBox1.Image = e;
+            remoteDesktop1.ShutdownRemoteDesktop();
         }
     }
 }

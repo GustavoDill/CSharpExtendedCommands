@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Reflection;
+using FormApp.Dialogs;
 
 namespace FormApp
 {
@@ -20,7 +21,7 @@ namespace FormApp
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             
-            Application.Run(new Form1());
+            Application.Run(new Main());
         }
     }
 }
