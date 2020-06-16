@@ -32,9 +32,11 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.sTopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pauseViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.remoteDesktop1 = new CSharpExtendedCommands.Web.Communication.RemoteDesktop();
+            this.remoteDesktopServer1 = new FormApp.Dialogs.RemoteDesktopServer();
+            this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sendMessageBoxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.remoteDesktop1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.remoteDesktopServer1)).BeginInit();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -44,7 +46,8 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
             this.sTopToolStripMenuItem,
-            this.pauseViewToolStripMenuItem});
+            this.pauseViewToolStripMenuItem,
+            this.actionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 343);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(534, 24);
@@ -75,36 +78,48 @@
             this.pauseViewToolStripMenuItem.Text = "Shutdown";
             this.pauseViewToolStripMenuItem.Click += new System.EventHandler(this.pauseViewToolStripMenuItem_Click);
             // 
-            // remoteDesktop1
+            // remoteDesktopServer1
             // 
-            this.remoteDesktop1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.remoteDesktop1.Initializations = new string[] {
-        "All",
-        "Viewer",
-        "LifetimeService"};
-            this.remoteDesktop1.Location = new System.Drawing.Point(0, 0);
-            this.remoteDesktop1.Mode = CSharpExtendedCommands.Web.Communication.RemoteDesktop.OperationMode.Server;
-            this.remoteDesktop1.Name = "remoteDesktop1";
-            this.remoteDesktop1.Size = new System.Drawing.Size(534, 340);
-            this.remoteDesktop1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.remoteDesktop1.TabIndex = 0;
-            this.remoteDesktop1.TabStop = false;
+            this.remoteDesktopServer1.BackColor = System.Drawing.Color.Black;
+            this.remoteDesktopServer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.remoteDesktopServer1.Location = new System.Drawing.Point(0, 0);
+            this.remoteDesktopServer1.Name = "remoteDesktopServer1";
+            this.remoteDesktopServer1.Port = 54782;
+            this.remoteDesktopServer1.Size = new System.Drawing.Size(534, 343);
+            this.remoteDesktopServer1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.remoteDesktopServer1.TabIndex = 2;
+            this.remoteDesktopServer1.TabStop = false;
+            // 
+            // actionsToolStripMenuItem
+            // 
+            this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.sendMessageBoxToolStripMenuItem});
+            this.actionsToolStripMenuItem.ForeColor = System.Drawing.Color.White;
+            this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
+            this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.actionsToolStripMenuItem.Text = "Actions";
+            // 
+            // sendMessageBoxToolStripMenuItem
+            // 
+            this.sendMessageBoxToolStripMenuItem.Name = "sendMessageBoxToolStripMenuItem";
+            this.sendMessageBoxToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.sendMessageBoxToolStripMenuItem.Text = "Send MessageBox";
+            this.sendMessageBoxToolStripMenuItem.Click += new System.EventHandler(this.sendMessageBoxToolStripMenuItem_Click);
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(534, 367);
-            this.Controls.Add(this.remoteDesktop1);
+            this.Controls.Add(this.remoteDesktopServer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Main";
             this.Text = "Main";
+            this.Load += new System.EventHandler(this.Main_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.remoteDesktop1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.remoteDesktopServer1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -112,10 +127,12 @@
 
         #endregion
 
-        private CSharpExtendedCommands.Web.Communication.RemoteDesktop remoteDesktop1;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem sTopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pauseViewToolStripMenuItem;
+        private RemoteDesktopServer remoteDesktopServer1;
+        private System.Windows.Forms.ToolStripMenuItem actionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sendMessageBoxToolStripMenuItem;
     }
 }

@@ -92,8 +92,6 @@ C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\FormApp\obj\Rele
 C:\Users\Valdir\source\repos\GustavoDill\CSharpExtendedCommands\FormApp\obj\Release\FormApp.pdb
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Release\FormApp.exe
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Release\FormApp.pdb
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Release\CSharpExtendedCommands.dll
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Release\CSharpExtendedCommands.pdb
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\FormApp.csprojAssemblyReference.cache
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\Interop.IWshRuntimeLibrary.dll
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\FormApp.csproj.ResolveComReference.cache

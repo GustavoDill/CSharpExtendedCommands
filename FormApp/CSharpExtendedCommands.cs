@@ -11594,7 +11594,7 @@ namespace CSharpExtendedCommands
                                 {
                                     listener = new TcpListener(Port);
                                     listener.Start();
-                                     listener.BeginAcceptTcpClient(delegate (IAsyncResult result)
+                                    listener.BeginAcceptTcpClient(delegate (IAsyncResult result)
                                     {
                                         client = listener.EndAcceptTcpClient(result);
                                         while (client.Connected)
@@ -11722,15 +11722,37 @@ namespace CSharpExtendedCommands
                     Port = port;
                     Ip = ip;
                 }
-                public TCPClient(Socket clientSocket)
+                public TCPClient(TcpClient client)
                 {
-                    ClientSocket = clientSocket;
+                    ClientSocket = client.Client;
                     try
                     {
-                        Port = (ushort)((IPEndPoint)clientSocket.RemoteEndPoint).Port;
-                        Ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address;
+                        Port = (ushort)((IPEndPoint)client.Client.LocalEndPoint).Port;
+                        Ip = ((IPEndPoint)client.Client.LocalEndPoint).Address;
                     }
                     catch { }
+                }
+                public TCPClient(Socket clientSocket, bool useRemoteEndPointAddresses = false)
+                {
+                    ClientSocket = clientSocket;
+                    if (useRemoteEndPointAddresses)
+                    {
+                        try
+                        {
+                            Port = (ushort)((IPEndPoint)clientSocket.RemoteEndPoint).Port;
+                            Ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address;
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Port = (ushort)((IPEndPoint)clientSocket.LocalEndPoint).Port;
+                            Ip = ((IPEndPoint)clientSocket.LocalEndPoint).Address;
+                        }
+                        catch { }
+                    }
                 }
                 public TCPClient(string hostName, ushort port = 0, int addressListIndex = 0)
                 {
@@ -12121,14 +12143,19 @@ namespace CSharpExtendedCommands
                         Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
+                public TCPServer(TcpListener listener)
+                {
+                    Port = (ushort)((IPEndPoint)listener.Server.LocalEndPoint).Port;
+                    ServerSocket = listener.Server;
+                }
                 public TCPServer()
                 {
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
                 public virtual bool Running { get; private set; }
-                internal readonly List<TCPClient> clients = new List<TCPClient>();
-                public virtual TCPClient[] ConnectedClients { get => clients.ToArray(); }
+                internal readonly List<Socket> clients = new List<Socket>();
+                public virtual Socket[] ConnectedClients { get => clients.ToArray(); }
                 public Socket ServerSocket { get; private set; }
                 public virtual bool BeginReceiveOnConnection { get; set; } = true;
                 public virtual bool AutoRelistenForMessages { get; set; } = true;
@@ -12149,15 +12176,11 @@ namespace CSharpExtendedCommands
                 }
                 internal virtual void RemoveClient(Socket client)
                 {
-                    foreach (var c in clients)
-                        if (c.ClientSocket == client)
-                        { clients.Remove(c); break; }
+                    clients.Remove(client);
                 }
-                internal virtual TCPClient AddClient(Socket client)
+                internal virtual void AddClient(Socket client)
                 {
-                    var c = new TCPClient(client);
-                    clients.Add(c);
-                    return c;
+                    clients.Add(client);
                 }
                 internal virtual void OnClientDataReceived(IAsyncResult data)
                 {
@@ -12173,12 +12196,12 @@ namespace CSharpExtendedCommands
                         // Don't shutdown because the socket may be disposed and its disconnected anyway.
                         current.Close();
                         RemoveClient(current);
-                        ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(current), "Client forcefully disconnected"));
+                        ClientDisconnected?.Invoke(this, new ClientConnectionArgs(current, "Client forcefully disconnected"));
                         return;
                     }
                     byte[] recBuf = new byte[received];
                     Array.Copy(buffer, recBuf, received);
-                    ClientDataReceived?.Invoke(this, new ClientDataArgs(new TCPClient(current), recBuf));
+                    ClientDataReceived?.Invoke(this, new ClientDataArgs(current, recBuf));
                     if (AutoRelistenForMessages)
                         try { current.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, current); } catch { }
                 }
@@ -12253,45 +12276,49 @@ namespace CSharpExtendedCommands
                     { SendFileToClient(c, file, flags, out SocketError error); errorCodes.Add(error); }
                     errorCode = errorCodes.ToArray();
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer)
+                public virtual int SendToClient(Socket client, byte[] buffer)
                 {
                     return client.Send(buffer);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, SocketFlags flags)
                 {
                     return client.Send(buffer, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int size, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, size, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, int offset, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, offset, size, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                public virtual int SendToClient(Socket client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
                 {
                     return client.Send(buffer, offset, size, flags, out errorCode);
                 }
-                public virtual int SendStringToClient(TCPClient client, string text)
+                public virtual int SendStringToClient(Socket client, string text)
                 {
                     return SendToClient(client, Encoding.ASCII.GetBytes(text));
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName)
+                public virtual void SendFileToClient(Socket client, string fileName)
                 {
                     client.SendFile(fileName);
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags)
+                public virtual void SendFileToClient(Socket client, string fileName, SocketFlags flags)
                 {
-                    client.SendFile(fileName, flags, out SocketError _);
+                    new TCPClient(client, true).SendFile(fileName, flags, out SocketError _);
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags, out SocketError errorCode)
+                public virtual void SendFileToClient(Socket client, string fileName, SocketFlags flags, out SocketError errorCode)
                 {
-                    client.SendFile(fileName, flags, out errorCode);
+                    new TCPClient(client, true).SendFile(fileName, flags, out errorCode);
                 }
                 internal virtual void OnRefuseConnection(ClientConnectionArgs e)
                 {
                     DisconnectClient(e.Client, "Connection refused!");
+                }
+                public void BeginAccept()
+                {
+                    ServerSocket.BeginAccept(OnClientConnection, null);
                 }
                 internal virtual void OnClientConnection(IAsyncResult request)
                 {
@@ -12300,15 +12327,14 @@ namespace CSharpExtendedCommands
                         Socket socket = null;
                         try { socket = ServerSocket.EndAccept(request); }
                         catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
-                        var client = new TCPClient(socket);
-                        var args = new ClientConnectionArgs(client, "Client connecting...");
+                        var client = new TCPClient(socket, true);
+                        var args = new ClientConnectionArgs(socket, "Client connecting...");
                         if (ClientTryConnect.Invoke(this, args))
                         {
-                            clients.Add(client);
-                            ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
+                            clients.Add(socket);
+                            ClientConnected?.Invoke(this, new ClientConnectionArgs(socket, "Client #" + (clients.IndexOf(socket) + 1) + " connected"));
                             if (BeginReceiveOnConnection)
-                                try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
-                            ServerSocket.BeginAccept(OnClientConnection, null);
+                                try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(socket, "Client forcefully disconnected")); }
                         }
                         else
                             OnRefuseConnection(args);
@@ -12318,11 +12344,10 @@ namespace CSharpExtendedCommands
                         Socket socket = null;
                         try { socket = ServerSocket.EndAccept(request); }
                         catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
-                        var client = AddClient(socket);
+                        AddClient(socket);
                         if (BeginReceiveOnConnection)
-                            try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
-                        ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
-                        ServerSocket.BeginAccept(OnClientConnection, null);
+                            try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(socket, "Client forcefully disconnected")); }
+                        ClientConnected?.Invoke(this, new ClientConnectionArgs(socket, "Client #" + (clients.IndexOf(socket) + 1) + " connected"));
                     }
                 }
 #pragma warning disable CS0067
@@ -12330,28 +12355,28 @@ namespace CSharpExtendedCommands
 #pragma warning restore CS0067
                 public delegate bool ClientConnectionHandler(object sender, ClientConnectionArgs e);
                 public event ClientConnectionHandler ClientTryConnect;
-                public virtual void DisconnectClient(TCPClient client)
+                public virtual void DisconnectClient(Socket client)
                 {
-                    try { client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
-                    try { client.ClientSocket.Close(); } catch { }
-                    RemoveClient(client.ClientSocket);
+                    RemoveClient(client);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, "Manual Disconnection through 'Server.DisconnectClient()'"));
+                    try { client.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.Close(); } catch { }
                 }
-                public virtual void DisconnectClient(TCPClient client, string msg)
+                public virtual void DisconnectClient(Socket client, string msg)
                 {
-                    try { client.ClientSocket.Send(Encoding.ASCII.GetBytes(msg)); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
-                    try { client.ClientSocket.Close(); } catch { }
-                    RemoveClient(client.ClientSocket);
+                    RemoveClient(client);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, msg));
+                    try { client.Send(Encoding.ASCII.GetBytes(msg)); client.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.Close(); } catch { }
                 }
                 public virtual void BeginReceive(int clientIndex)
                 {
                     BeginReceive(clients[clientIndex]);
                 }
-                public virtual void BeginReceive(TCPClient client)
+                public virtual void BeginReceive(Socket client)
                 {
                     if (clients.Contains(client))
-                        client.ClientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
+                        client.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
                     else
                         throw new Exception("Client is either not connected or not been listed correctly!");
                 }
@@ -12364,7 +12389,7 @@ namespace CSharpExtendedCommands
                 public ushort Port { get; set; }
                 internal virtual void OnClientConnectionFailed(Socket client, string msg = null)
                 {
-                    ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(new TCPClient(client), msg == null ? "" : msg));
+                    ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(client, msg == null ? "" : msg));
                 }
                 public event EventHandler<ClientConnectionArgs> ClientConnectionFailed;
                 public event EventHandler<ClientConnectionArgs> ClientConnected;
@@ -12374,24 +12399,24 @@ namespace CSharpExtendedCommands
 #pragma warning restore CS0067
                 public class ClientDataArgs : EventArgs
                 {
-                    public ClientDataArgs(TCPClient client, object data)
+                    public ClientDataArgs(Socket client, object data)
                     {
                         Client = client;
                         Data = data;
                     }
 
-                    public TCPClient Client { get; }
+                    public Socket Client { get; }
                     public object Data { get; }
                 }
                 public class ClientConnectionArgs : EventArgs
                 {
-                    public ClientConnectionArgs(TCPClient client, string msg)
+                    public ClientConnectionArgs(Socket client, string msg)
                     {
                         Client = client;
                         Msg = msg;
                     }
 
-                    public TCPClient Client { get; }
+                    public Socket Client { get; }
                     public string Msg { get; }
                 }
             }

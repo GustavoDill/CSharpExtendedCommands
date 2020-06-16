@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using Microsoft.VisualBasic;
+using System;
+using System.Windows.Forms;
 
 namespace FormApp.Dialogs
 {
@@ -20,17 +22,33 @@ namespace FormApp.Dialogs
 
         private void toolStripMenuItem1_Click(object sender, System.EventArgs e)
         {
-            remoteDesktop1.StartRemoteDesktop();
+            remoteDesktopServer1.Start();
+            //remoteDesktop1.StartRemoteDesktop();
             //remoteDesktop1.LoadCommunication();
         }
         private void sTopToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            remoteDesktop1.StopRemoteDesktop();
+            remoteDesktopServer1.Stop();
+            //remoteDesktop1.StopRemoteDesktop();
         }
 
         private void pauseViewToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            remoteDesktop1.ShutdownRemoteDesktop();
+            remoteDesktopServer1.Shutdown();
+        }
+
+        private void Main_Load(object sender, System.EventArgs e)
+        {
+            remoteDesktopServer1.Initialize();
+        }
+
+        private void sendMessageBoxToolStripMenuItem_Click(object sender, System.EventArgs e)
+        {
+            Action<object> action = (t) => MessageBox.Show(t.ToString());
+            object p = Interaction.InputBox("Message", "Send MessageBox");
+            object[] send = new object[] { "MethodInvoke", action, p };
+            if (p.ToString() != "")
+                remoteDesktopServer1.Send(send);
         }
     }
 }

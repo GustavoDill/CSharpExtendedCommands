@@ -11285,228 +11285,436 @@ namespace CSharpExtendedCommands
         }
         namespace Communication
         {
-            public class RemoteDesktop : PictureBox
+            public class RemoteDesktopServer : PictureBox
             {
+                #region Fields
+                TcpClient client;
+                TcpListener listener;
+                BinaryFormatter binaryFormatter;
+                Thread ClientUpdater;
+                NetworkStream mainStream;
+                #endregion
+
                 #region Properties
-                public OperationMode Mode { get; set; }
-                public RemoteDesktopPorts Ports { get; set; }
+                public int Port { get; set; } = 54782;
+                [Browsable(false), CompilerGenerated]
+                public bool Enabled { get; private set; }
                 [Browsable(false)]
-                public bool Running { get; private set; }
-                [Browsable(false)]
-                public IPAddress Ip { get; private set; }
-                [Browsable(false)]
-                public bool Initialized
-                {
-                    get
-                    {
-                        foreach (var v in initializedMethods.Values)
-                            if (!v) return false;
-                        return true;
-                    }
-                }
+                public Socket ClientConnectionSocket { get => client.Client; }
                 #endregion
-
-                public struct RemoteDesktopPorts
-                {
-                    public RemoteDesktopPorts(ushort viewerPort)
-                    {
-                        ViewerPort = viewerPort;
-                    }
-                    public ushort ViewerPort { get; set; }
-                }
-                public enum OperationMode
-                {
-                    Client,
-                    Server
-                }
-                public void StartRemoteDesktop()
-                {
-                    if (!Initialized)
-                        InitializeAll();
-                    Viewer.StartViewer();
-                }
-                public void StopRemoteDesktop()
-                {
-                    Viewer.StopViewer();
-                }
-
-                #region Events
-                internal virtual void OnDesktopViewUpdate(Image desktop)
-                {
-                    Image = desktop;
-                }
-                #endregion
-
-                #region Initialization
-                Dictionary<string, bool> initializedMethods = new Dictionary<string, bool>();
-                public void InitializeAll()
-                {
-                    foreach (var kv in initializedMethods)
-                        if (!kv.Value)
-                            InvokeMethod(kv.Key);
-                }
-                public void InitializeViewer()
-                {
-                    switch (Mode)
-                    {
-                        case OperationMode.Client:
-                            Viewer = new RemoteDesktopViewer(Mode, Ip, Ports.ViewerPort);
-                            break;
-                        case OperationMode.Server:
-                            Viewer = new RemoteDesktopViewer(Mode, Ports.ViewerPort);
-                            Viewer.ViewDesktop += OnDesktopViewUpdate;
-                            break;
-                    }
-                    initializedMethods.Add(MethodInfo.GetCurrentMethod().Name.Replace("Initialize", ""), true);
-                }
-                private string[] _inits;
-
-                public string[] Initializations
-                {
-                    get { return _inits; }
-                    set { _inits = value; }
-                }
-                #endregion
-
-                void InvokeMethod(string name, params object[] args)
-                {
-                    this.GetType().GetMethod(name).Invoke(this, args);
-                }
 
                 #region Constructors
-                public void Constructor(OperationMode mode, IPAddress ip, RemoteDesktopPorts ports)
+                public RemoteDesktopServer()
                 {
-                    Mode = mode;
-                    Ip = ip;
-                    Ports = ports;
-                    List<string> inits = new List<string>();
-                    var m = this.GetType().GetMethods();
-                    foreach (var met in m)
-                        if (met.Name.StartsWith("Initialize"))
-                            inits.Add(met.Name.Replace("Initialize", ""));
-                    Initializations = inits.ToArray();
+                    Constructor(54782);
                 }
-                public RemoteDesktop(OperationMode mode, string ip, RemoteDesktopPorts ports)
+
+                void Constructor(int port)
                 {
-                    Constructor(mode, IPAddress.Parse(ip), ports);
+                    Port = port;
+                    SizeMode = PictureBoxSizeMode.StretchImage;
+                    MouseDoubleClick += S_MouseDoubleClick;
+                    MouseClick += S_MouseClick;
+                    MouseDown += S_MouseDown;
+                    MouseUp += S_MouseUp;
                 }
-                public RemoteDesktop(OperationMode mode, RemoteDesktopPorts ports)
+                void InvokeEvent(object[] msg)
                 {
-                    Constructor(mode, null, ports);
+                    if (SendManualMessage != null)
+                        SendManualMessage.Invoke(msg);
+                    else
+                        Send(msg);
                 }
-                public RemoteDesktop()
+                public void SendKeyDown(KeyEventArgs e)
                 {
-                    Constructor(OperationMode.Server, null, new RemoteDesktopPorts(54782));
+                    string k = "";
+                    if (Regex.IsMatch(e.KeyCode.ToString(), "F\\d{1,2}"))
+                        k = $"{{{e.KeyCode.ToString().ToUpper()}}}";
+                    else if (Regex.IsMatch(e.KeyCode.ToString(), "d[0-9]"))
+                        k = e.KeyCode.ToString().Substring(1);
+                    else if (e.KeyCode == Keys.Escape)
+                        k = "{ESC}";
+                    else if (e.KeyCode == Keys.Return)
+                        k = "{ENTER}";
+                    else if (e.KeyCode == Keys.Back)
+                        k = "{BS}";
+                    else if (e.KeyCode == Keys.Space)
+                        k = " ";
+                    else if (e.KeyCode == Keys.Up)
+                        k = "{UP}";
+                    else if (e.KeyCode == Keys.Left)
+                        k = "{LEFT}";
+                    else if (e.KeyCode == Keys.Down)
+                        k = "{DOWN}";
+                    else if (e.KeyCode == Keys.Right)
+                        k = "{RIGHT}";
+                    if (e.Shift && k == "")
+                        k = e.KeyCode.ToString().ToUpper();
+                    else if (k == "")
+                        k = e.KeyCode.ToString().ToLower();
+                    if (e.Shift)
+                        k = "+" + k;
+                    if (e.Alt)
+                        k += "%" + k;
+                    if (e.Control)
+                        k = "^" + k;
+                    InvokeEvent(new object[] { "KeyDown", k });
+                }
+                #region Events
+
+                private void S_MouseDoubleClick(object sender, MouseEventArgs e)
+                {
+                    var args = MapMouseArgs(Size, DesktopImageSize, e);
+                    InvokeEvent(new object[] { "MouseDoubleClick", args.Button, args.Clicks, args.Location });
+                }
+
+                private void S_MouseDown(object sender, MouseEventArgs e)
+                {
+                    var args = MapMouseArgs(Size, DesktopImageSize, e);
+                    InvokeEvent(new object[] { "MouseDown", args.Button, args.Location });
+                }
+                private void S_MouseUp(object sender, MouseEventArgs e)
+                {
+                    var args = MapMouseArgs(Size, DesktopImageSize, e);
+                    InvokeEvent(new object[] { "MouseUp", args.Button, args.Location });
+                }
+                private void S_MouseMove(object sender, MouseEventArgs e)
+                {
+                    var args = MapMouseArgs(Size, DesktopImageSize, e);
+                    InvokeEvent(new object[] { "MouseMove", args.Location });
+                }
+
+                private void S_MouseClick(object sender, MouseEventArgs e)
+                {
+                    var args = MapMouseArgs(Size, DesktopImageSize, e);
+                    InvokeEvent(new object[] { "MouseClick", args.Button, args.Clicks, args.Location });
                 }
                 #endregion
-                [Browsable(false)]
-                public Size RemoteDesktopSize { get; private set; }
 
+                #endregion
 
-                #region DesktopViewer
-                [Browsable(false)]
-                public RemoteDesktopViewer Viewer { get; private set; }
-                public event RemoteDesktopViewer.ViewDesktopHandler ViewDesktop;
-                public class RemoteDesktopViewer
+                #region MouseMapping
+
+                Point MapMousePosition(Point src, Point origin, Point value)
                 {
-                    TcpListener listener;
-                    TcpClient client;
-                    NetworkStream mainStream;
-                    Action Start;
-                    Action Stop;
-                    public void StartViewer()
+                    return MapMousePosition(new Size(src.X, src.Y), new Size(origin.X, origin.Y), value);
+                }
+                Point MapMousePosition(Size src, Size origin, Point value)
+                {
+                    var t = src;
+                    var v = value;
+                    double pX = v.X * 100d / t.Width;
+                    double pY = v.Y * 100d / t.Height;
+                    double newX = origin.Width * (pX / 100d);
+                    double newY = origin.Height * (pY / 100d);
+                    return new Point((int)Math.Round(newX), (int)Math.Round(newY));
+                }
+                MouseEventArgs MapMouseArgs(Size src, Size origin, MouseEventArgs v)
+                {
+                    var pos = MapMousePosition(src, origin, v.Location);
+                    return new MouseEventArgs(v.Button, v.Clicks, pos.X, pos.Y, v.Delta);
+                }
+                #endregion
+
+
+                #region Initialization
+                protected override void InitLayout()
+                {
+                    base.InitLayout();
+                    Initialize();
+                }
+                public void Initialize()
+                {
+                    listener = new TcpListener(Port);
+                    ClientUpdater = new Thread(OnClientUpdate);
+                    binaryFormatter = new BinaryFormatter();
+                }
+                #endregion
+
+                TCPClient cs_tcp;
+                public void SetClient(TcpClient client)
+                {
+                    this.client = client;
+                }
+                private Size DesktopImageSize;
+                public bool ManualHandling { get; set; } = false;
+                #region ManualUpdating
+                public void SetDesktopImage(Image img)
+                {
+                    DesktopImageSize = img.Size;
+                    Image = img;
+                }
+                public delegate void MessageSenderHandler(object message);
+                public event MessageSenderHandler SendManualMessage;
+                #endregion
+                void OnClientUpdate()
+                {
+                    if (client == null)
                     {
-                        Start.Invoke();
+                        client = listener.AcceptTcpClient();
+                        cs_tcp = new TCPClient(client);
                     }
-                    public void StopViewer()
+                    while (client.Connected)
                     {
-                        Stop.Invoke();
-                    }
-                    BinaryFormatter formatter = new BinaryFormatter();
-                    public Thread MainViewerThread { get; private set; }
-                    #region Constructors
-                    void Constructor(OperationMode mode, IPAddress ip, ushort port)
-                    {
-                        Mode = mode;
-                        Ip = ip;
-                        Port = port;
-                        switch (Mode)
+                        try
                         {
-                            case OperationMode.Client:
-                                client = new TcpClient();
-                                MainViewerThread = new Thread(() =>
-                                {
-                                    while (client.Connected)
-                                    {
-                                        mainStream = client.GetStream();
-                                        formatter.Serialize(mainStream, ComputerInfo.Screenshot);
-                                    }
-                                });
-                                Start = () =>
-                                {
-                                    if (!client.Connected)
-                                        client.Connect(Ip, Port);
-                                    if (!MainViewerThread.IsAlive)
-                                        MainViewerThread.Start();
-                                };
-                                Stop = () =>
-                                {
-                                    if (MainViewerThread.IsAlive)
-                                        MainViewerThread.Abort();
-                                    client.Client.Disconnect(true);
-                                };
-                                break;
-                            case OperationMode.Server:
-                                MainViewerThread = new Thread(() =>
-                                {
-                                    while (client.Connected)
-                                    {
-                                        mainStream = client.GetStream();
-                                        ViewDesktop?.Invoke((Image)formatter.Deserialize(mainStream));
-                                    }
-                                });
-                                Start = () =>
-                                {
-                                    listener = new TcpListener(Port);
-                                    listener.Start();
-                                    var client = listener.AcceptTcpClient();
-                                    if (!MainViewerThread.IsAlive)
-                                        MainViewerThread.Start();
-                                };
-                                Stop = () =>
-                                {
-                                    if (MainViewerThread.IsAlive)
-                                        MainViewerThread.Abort();
-                                    listener.Stop();
-                                    listener.Server.Shutdown(SocketShutdown.Both);
-                                    listener.Server.Close();
-                                    listener.Server.Dispose();
-                                };
-                                break;
+                            if (!Enabled)
+                                goto Jmp;
+                            mainStream = client.GetStream();
+                            var obj = binaryFormatter.Deserialize(mainStream);
+                            if (obj != null)
+                                OnClientDataReceived(obj);
+                            Jmp:;
                         }
+                        catch { }
                     }
-                    public RemoteDesktopViewer(OperationMode mode, ushort port)
-                    {
-                        Constructor(mode, null, port);
-                    }
-                    public RemoteDesktopViewer(OperationMode mode, string host, ushort port)
-                    {
-                        Constructor(mode, Dns.GetHostAddresses(host)[0], port);
-                    }
-                    public RemoteDesktopViewer(OperationMode mode, IPAddress ip, ushort port)
-                    {
-                        Constructor(mode, ip, port);
-                    }
-                    #endregion
+                }
+                void OnClientDataReceived(object data)
+                {
+                    if (data is Image)
+                        Image = (Image)data;
+                }
+                public void Send(object send)
+                {
+                    //bool flag = Enabled;
+                    //if (Enabled)
+                    //    Enabled = false;
+                    Try(() => mainStream = client.GetStream());
+                    Try(() => binaryFormatter.Serialize(mainStream, send));
+                    //if (flag)
+                    //    Enabled = true;
+                }
 
-                    public delegate void ViewDesktopHandler(Image desktopImage);
-                    public event ViewDesktopHandler ViewDesktop;
-
-                    public OperationMode Mode { get; private set; }
-                    public IPAddress Ip { get; private set; }
-                    public ushort Port { get; private set; }
+                public void Start()
+                {
+                    if (Enabled)
+                        return;
+                    Enabled = true;
+                    if (ManualHandling)
+                        return;
+                    if (client is null)
+                        listener.Start();
+                    if (!ClientUpdater.IsAlive)
+                        ClientUpdater.Start();
+                }
+                public void Stop()
+                {
+                    if (!Enabled)
+                        return;
+                    Enabled = false;
+                }
+                void Try(Action action) { try { action.Invoke(); } catch { } }
+                public void Shutdown()
+                {
+                    if (ClientUpdater.IsAlive)
+                        ClientUpdater.Abort();
+                    Try(() => listener.Server.Shutdown(SocketShutdown.Both));
+                    Try(() => listener.Server.Close());
+                    Try(() => listener.Server.Dispose());
+                    Try(() => client.Client.Shutdown(SocketShutdown.Both));
+                    Try(() => client.Client.Close());
+                    Try(() => client.Client.Dispose());
+                }
+            }
+            public class RemoteDesktopClient : Component
+            {
+                #region EventHandler
+                public RemoteDesktopEventHandler EventHandler { get; set; }
+                public class RemoteDesktopEventHandler
+                {
+                    public bool CheckEvents(object[] msg)
+                    {
+                        var evens = GetType().GetFields();
+                        foreach (var ev in evens)
+                            if (ev.Name == msg[0].ToString())
+                                return true;
+                        return false;
+                    }
+                    public void InvokeHandler(object[] msg)
+                    {
+                        InvokeHandler(msg[0].ToString(), msg);
+                    }
+                    public void InvokeHandler(string name, object[] msg)
+                    {
+                        var actionField = GetType().GetField(name).GetValue(this);
+                        if (actionField == null)
+                            return;
+                        var prop = actionField.GetType().GetProperty("Method").GetValue(actionField);
+                        if (prop == null)
+                            return;
+                        var f = (MethodInfo)prop;
+                        if (f == null)
+                            return;
+                        var p = f.GetParameters();
+                        if (p.Length == 0)
+                            f.Invoke(this, new object[] { });
+                        List<object> prms = new List<object>();
+                        for (int i = 1; i < msg.Length; i++)
+                            prms.Add(Convert.ChangeType(msg[i], p[i - 1].ParameterType));
+                        f.Invoke(this, prms.ToArray());
+                    }
+                    public Action<Point> MouseMove;
+                    public Action<MouseButtons, Point> MouseDown;
+                    public Action<MouseButtons, Point> MouseUp;
+                    public Action<MouseButtons, int, Point> MouseClick;
+                    public Action<MouseButtons, int, Point> MouseDoubleClick;
+                    public Action<string> KeyDown;
                 }
                 #endregion
+
+                #region Fields
+                TcpClient client;
+                NetworkStream mainStream;
+                Thread ClientStreamer;
+                Thread Receiver;
+                bool desktopStreamDelay = false;
+                private BinaryFormatter binaryFormatter;
+                #endregion
+
+                #region Properties
+                private bool _canReceive;
+
+                public bool CanReceive
+                {
+                    get { return _canReceive; }
+                    set { if (!Enabled) _canReceive = value; }
+                }
+
+                public bool IsShutdown { get; private set; }
+                public int Port { get; set; } = 54782;
+                [Browsable(false)]
+                public bool Enabled { get; private set; }
+                [Browsable(false)]
+                private IPAddress HostIp { get; set; } = IPAddress.Parse("127.0.0.1");//{ get { try { return IPAddress.Parse(Host); } catch { return null; } } }
+                public string Host
+                {
+                    get { return HostIp.ToString(); }
+                    set { try { HostIp = IPAddress.Parse(value); } catch { } }
+                }
+                public bool ManualHandling { get; set; }
+                #endregion
+
+                #region Constructors
+                public RemoteDesktopClient() { }
+                public RemoteDesktopClient(bool manual)
+                {
+                    ManualHandling = manual;
+                }
+                public RemoteDesktopClient(string host, int port)
+                {
+                    Constructor(host, port);
+                }
+                void Constructor(string host, int port)
+                {
+                    HostIp = Dns.GetHostAddresses(host)[0];
+                    Port = port;
+                }
+                #endregion
+
+                #region Initialialization
+                public void Initialize()
+                {
+                    binaryFormatter = new BinaryFormatter();
+                    ClientStreamer = new Thread(Stream);
+                    Receiver = new Thread(Receive);
+                    client = new TcpClient();
+                }
+                public void SetClient(TcpClient client)
+                {
+                    this.client = client;
+                }
+                #endregion
+
+                bool CheckMessage(object[] obj, string check)
+                {
+                    if (!(obj.Length > 0))
+                        return false;
+                    if (!(obj[0] is string))
+                        return false;
+                    return obj[0].ToString() == check;
+                }
+
+                void InvokeMethod(object[] msg)
+                {
+                    if (msg[1] is Action<object>)
+                        ((Action<object>)msg[1]).Invoke(msg[2]);
+                    else
+                        ((Action)msg[1]).Invoke();
+                }
+
+                void Receive()
+                {
+                    while (client.Connected)
+                    {
+                        try
+                        {
+                            mainStream = client.GetStream();
+                            var obj = binaryFormatter.Deserialize(mainStream);
+                            if (obj is Action)
+                                ((Action)obj).Invoke();
+                            if (obj is object[])
+                                if (CheckMessage((object[])obj, "MethodInvoke"))
+                                    InvokeMethod((object[])obj);
+                        }
+                        catch { }
+                    }
+                }
+
+                public void Stream(object send)
+                {
+                    while (client.Connected)
+                    {
+                        try
+                        {
+
+                            mainStream = client.GetStream();
+                            if (send != null)
+                                binaryFormatter.Serialize(mainStream, send);
+                            else if (Enabled)
+                                binaryFormatter.Serialize(mainStream, ComputerInfo.Screenshot);
+                        }
+                        catch { }
+                        if (desktopStreamDelay)
+                            Thread.Sleep(1);
+                    }
+                }
+
+                public void Shutdown()
+                {
+                    StopStream();
+                    if (ClientStreamer.IsAlive)
+                        ClientStreamer.Abort();
+                    Try(() => client.Client.Shutdown(SocketShutdown.Both));
+                    Try(() => client.Client.Close());
+                    Try(() => client.Client.Dispose());
+                    IsShutdown = true;
+                }
+
+                void Try(Action action) { try { action.Invoke(); } catch { } }
+
+                public void StartStream()
+                {
+                    if (IsShutdown)
+                        throw new ObjectDisposedException("RemoteDesktop object already shutdown!");
+                    if (!client.Connected)
+                        client.Connect(Host, Port);
+                    if (!ClientStreamer.IsAlive)
+                        ClientStreamer.Start();
+                    if (CanReceive && !Receiver.IsAlive)
+                        Receiver.Start();
+                    Enabled = true;
+                }
+                public void StopStream()
+                {
+                    if (!Enabled)
+                        return;
+                    Enabled = false;
+                }
+                public void StopReceiveing()
+                {
+                    if (Receiver.IsAlive)
+                        Receiver.Abort();
+                }
             }
             public class TcpPackage
             {
@@ -11575,15 +11783,37 @@ namespace CSharpExtendedCommands
                     Port = port;
                     Ip = ip;
                 }
-                public TCPClient(Socket clientSocket)
+                public TCPClient(TcpClient client)
                 {
-                    ClientSocket = clientSocket;
+                    ClientSocket = client.Client;
                     try
                     {
-                        Port = (ushort)((IPEndPoint)clientSocket.RemoteEndPoint).Port;
-                        Ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address;
+                        Port = (ushort)((IPEndPoint)client.Client.LocalEndPoint).Port;
+                        Ip = ((IPEndPoint)client.Client.LocalEndPoint).Address;
                     }
                     catch { }
+                }
+                public TCPClient(Socket clientSocket, bool useRemoteEndPointAddresses = false)
+                {
+                    ClientSocket = clientSocket;
+                    if (useRemoteEndPointAddresses)
+                    {
+                        try
+                        {
+                            Port = (ushort)((IPEndPoint)clientSocket.RemoteEndPoint).Port;
+                            Ip = ((IPEndPoint)clientSocket.RemoteEndPoint).Address;
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Port = (ushort)((IPEndPoint)clientSocket.LocalEndPoint).Port;
+                            Ip = ((IPEndPoint)clientSocket.LocalEndPoint).Address;
+                        }
+                        catch { }
+                    }
                 }
                 public TCPClient(string hostName, ushort port = 0, int addressListIndex = 0)
                 {
@@ -11717,12 +11947,12 @@ namespace CSharpExtendedCommands
                 public virtual AddressFamily AddressFamily { get => ClientSocket.AddressFamily; }
                 public virtual int Avaliable { get => ClientSocket.Available; }
                 public virtual bool EnableBroadcast { get => ClientSocket.EnableBroadcast; set => ClientSocket.EnableBroadcast = value; }
-                private NetworkStream _stream;
+                private TcpClient _innerClient;
                 public NetworkStream GetStream()
                 {
-                    if (_stream == null)
-                        _stream = new NetworkStream(ClientSocket, true);
-                    return _stream;
+                    if (_innerClient == null)
+                        _innerClient = new TcpClient() { Client = ClientSocket };
+                    return _innerClient.GetStream();
                 }
                 public virtual Stream ReceiveFile()
                 {
@@ -11855,6 +12085,15 @@ namespace CSharpExtendedCommands
                     }
                     return new TcpPackage(data.ToArray());
                 }
+                public virtual void SendToStream(object obj)
+                {
+                    formatter.Serialize(GetStream(), obj);
+                }
+                BinaryFormatter formatter = new BinaryFormatter();
+                public virtual object ReceiveFromStream()
+                {
+                    try { return formatter.Deserialize(GetStream()); } catch (Exception ex) { return ex; }
+                }
                 public virtual TcpPackage ReceivePackage()
                 {
                     byte[] buffer;
@@ -11974,14 +12213,19 @@ namespace CSharpExtendedCommands
                         Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
+                public TCPServer(TcpListener listener)
+                {
+                    Port = (ushort)((IPEndPoint)listener.Server.LocalEndPoint).Port;
+                    ServerSocket = listener.Server;
+                }
                 public TCPServer()
                 {
                     Port = ushort.Parse(new Random().Next(888, int.Parse(ushort.MaxValue.ToString())).ToString());
                     Setup();
                 }
                 public virtual bool Running { get; private set; }
-                internal readonly List<TCPClient> clients = new List<TCPClient>();
-                public virtual TCPClient[] ConnectedClients { get => clients.ToArray(); }
+                internal readonly List<Socket> clients = new List<Socket>();
+                public virtual Socket[] ConnectedClients { get => clients.ToArray(); }
                 public Socket ServerSocket { get; private set; }
                 public virtual bool BeginReceiveOnConnection { get; set; } = true;
                 public virtual bool AutoRelistenForMessages { get; set; } = true;
@@ -12002,15 +12246,11 @@ namespace CSharpExtendedCommands
                 }
                 internal virtual void RemoveClient(Socket client)
                 {
-                    foreach (var c in clients)
-                        if (c.ClientSocket == client)
-                        { clients.Remove(c); break; }
+                    clients.Remove(client);
                 }
-                internal virtual TCPClient AddClient(Socket client)
+                internal virtual void AddClient(Socket client)
                 {
-                    var c = new TCPClient(client);
-                    clients.Add(c);
-                    return c;
+                    clients.Add(client);
                 }
                 internal virtual void OnClientDataReceived(IAsyncResult data)
                 {
@@ -12026,12 +12266,12 @@ namespace CSharpExtendedCommands
                         // Don't shutdown because the socket may be disposed and its disconnected anyway.
                         current.Close();
                         RemoveClient(current);
-                        ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(current), "Client forcefully disconnected"));
+                        ClientDisconnected?.Invoke(this, new ClientConnectionArgs(current, "Client forcefully disconnected"));
                         return;
                     }
                     byte[] recBuf = new byte[received];
                     Array.Copy(buffer, recBuf, received);
-                    ClientDataReceived?.Invoke(this, new ClientDataArgs(new TCPClient(current), recBuf));
+                    ClientDataReceived?.Invoke(this, new ClientDataArgs(current, recBuf));
                     if (AutoRelistenForMessages)
                         try { current.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, current); } catch { }
                 }
@@ -12106,45 +12346,49 @@ namespace CSharpExtendedCommands
                     { SendFileToClient(c, file, flags, out SocketError error); errorCodes.Add(error); }
                     errorCode = errorCodes.ToArray();
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer)
+                public virtual int SendToClient(Socket client, byte[] buffer)
                 {
                     return client.Send(buffer);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, SocketFlags flags)
                 {
                     return client.Send(buffer, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int size, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, size, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags)
+                public virtual int SendToClient(Socket client, byte[] buffer, int offset, int size, SocketFlags flags)
                 {
                     return client.Send(buffer, offset, size, flags);
                 }
-                public virtual int SendToClient(TCPClient client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
+                public virtual int SendToClient(Socket client, byte[] buffer, int offset, int size, SocketFlags flags, out SocketError errorCode)
                 {
                     return client.Send(buffer, offset, size, flags, out errorCode);
                 }
-                public virtual int SendStringToClient(TCPClient client, string text)
+                public virtual int SendStringToClient(Socket client, string text)
                 {
                     return SendToClient(client, Encoding.ASCII.GetBytes(text));
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName)
+                public virtual void SendFileToClient(Socket client, string fileName)
                 {
                     client.SendFile(fileName);
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags)
+                public virtual void SendFileToClient(Socket client, string fileName, SocketFlags flags)
                 {
-                    client.SendFile(fileName, flags, out SocketError _);
+                    new TCPClient(client, true).SendFile(fileName, flags, out SocketError _);
                 }
-                public virtual void SendFileToClient(TCPClient client, string fileName, SocketFlags flags, out SocketError errorCode)
+                public virtual void SendFileToClient(Socket client, string fileName, SocketFlags flags, out SocketError errorCode)
                 {
-                    client.SendFile(fileName, flags, out errorCode);
+                    new TCPClient(client, true).SendFile(fileName, flags, out errorCode);
                 }
                 internal virtual void OnRefuseConnection(ClientConnectionArgs e)
                 {
                     DisconnectClient(e.Client, "Connection refused!");
+                }
+                public void BeginAccept()
+                {
+                    ServerSocket.BeginAccept(OnClientConnection, null);
                 }
                 internal virtual void OnClientConnection(IAsyncResult request)
                 {
@@ -12153,15 +12397,14 @@ namespace CSharpExtendedCommands
                         Socket socket = null;
                         try { socket = ServerSocket.EndAccept(request); }
                         catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
-                        var client = new TCPClient(socket);
-                        var args = new ClientConnectionArgs(client, "Client connecting...");
+                        var client = new TCPClient(socket, true);
+                        var args = new ClientConnectionArgs(socket, "Client connecting...");
                         if (ClientTryConnect.Invoke(this, args))
                         {
-                            clients.Add(client);
-                            ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
+                            clients.Add(socket);
+                            ClientConnected?.Invoke(this, new ClientConnectionArgs(socket, "Client #" + (clients.IndexOf(socket) + 1) + " connected"));
                             if (BeginReceiveOnConnection)
-                                try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
-                            ServerSocket.BeginAccept(OnClientConnection, null);
+                                try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(socket, "Client forcefully disconnected")); }
                         }
                         else
                             OnRefuseConnection(args);
@@ -12171,11 +12414,10 @@ namespace CSharpExtendedCommands
                         Socket socket = null;
                         try { socket = ServerSocket.EndAccept(request); }
                         catch (Exception ex) { OnClientConnectionFailed(socket, ex.Message); return; }
-                        var client = AddClient(socket);
+                        AddClient(socket);
                         if (BeginReceiveOnConnection)
-                            try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(new TCPClient(socket), "Client forcefully disconnected")); }
-                        ClientConnected?.Invoke(this, new ClientConnectionArgs(client, "Client #" + (clients.IndexOf(client) + 1) + " connected"));
-                        ServerSocket.BeginAccept(OnClientConnection, null);
+                            try { socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, socket); } catch { RemoveClient(socket); ClientDisconnected?.Invoke(this, new ClientConnectionArgs(socket, "Client forcefully disconnected")); }
+                        ClientConnected?.Invoke(this, new ClientConnectionArgs(socket, "Client #" + (clients.IndexOf(socket) + 1) + " connected"));
                     }
                 }
 #pragma warning disable CS0067
@@ -12183,28 +12425,28 @@ namespace CSharpExtendedCommands
 #pragma warning restore CS0067
                 public delegate bool ClientConnectionHandler(object sender, ClientConnectionArgs e);
                 public event ClientConnectionHandler ClientTryConnect;
-                public virtual void DisconnectClient(TCPClient client)
+                public virtual void DisconnectClient(Socket client)
                 {
-                    try { client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
-                    try { client.ClientSocket.Close(); } catch { }
-                    RemoveClient(client.ClientSocket);
+                    try { client.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.Close(); } catch { }
+                    RemoveClient(client);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, "Manual Disconnection through 'Server.DisconnectClient()'"));
                 }
-                public virtual void DisconnectClient(TCPClient client, string msg)
+                public virtual void DisconnectClient(Socket client, string msg)
                 {
-                    try { client.ClientSocket.Send(Encoding.ASCII.GetBytes(msg)); client.ClientSocket.Shutdown(SocketShutdown.Both); } catch { }
-                    try { client.ClientSocket.Close(); } catch { }
-                    RemoveClient(client.ClientSocket);
                     ClientDisconnected?.Invoke(this, new ClientConnectionArgs(client, msg));
+                    try { client.Send(Encoding.ASCII.GetBytes(msg)); client.Shutdown(SocketShutdown.Both); } catch { }
+                    try { client.Close(); } catch { }
+                    RemoveClient(client);
                 }
                 public virtual void BeginReceive(int clientIndex)
                 {
                     BeginReceive(clients[clientIndex]);
                 }
-                public virtual void BeginReceive(TCPClient client)
+                public virtual void BeginReceive(Socket client)
                 {
                     if (clients.Contains(client))
-                        client.ClientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
+                        client.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, OnClientDataReceived, client);
                     else
                         throw new Exception("Client is either not connected or not been listed correctly!");
                 }
@@ -12217,7 +12459,7 @@ namespace CSharpExtendedCommands
                 public ushort Port { get; set; }
                 internal virtual void OnClientConnectionFailed(Socket client, string msg = null)
                 {
-                    ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(new TCPClient(client), msg == null ? "" : msg));
+                    ClientConnectionFailed?.Invoke(this, new ClientConnectionArgs(client, msg == null ? "" : msg));
                 }
                 public event EventHandler<ClientConnectionArgs> ClientConnectionFailed;
                 public event EventHandler<ClientConnectionArgs> ClientConnected;
@@ -12227,24 +12469,24 @@ namespace CSharpExtendedCommands
 #pragma warning restore CS0067
                 public class ClientDataArgs : EventArgs
                 {
-                    public ClientDataArgs(TCPClient client, object data)
+                    public ClientDataArgs(Socket client, object data)
                     {
                         Client = client;
                         Data = data;
                     }
 
-                    public TCPClient Client { get; }
+                    public Socket Client { get; }
                     public object Data { get; }
                 }
                 public class ClientConnectionArgs : EventArgs
                 {
-                    public ClientConnectionArgs(TCPClient client, string msg)
+                    public ClientConnectionArgs(Socket client, string msg)
                     {
                         Client = client;
                         Msg = msg;
                     }
 
-                    public TCPClient Client { get; }
+                    public Socket Client { get; }
                     public string Msg { get; }
                 }
             }
