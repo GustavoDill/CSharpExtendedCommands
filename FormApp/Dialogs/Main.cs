@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using CSharpExtendedCommands.DataTypes;
+using Microsoft.VisualBasic;
 using System;
 using System.Windows.Forms;
 
@@ -34,7 +35,9 @@ namespace FormApp.Dialogs
 
         private void pauseViewToolStripMenuItem_Click(object sender, System.EventArgs e)
         {
-            remoteDesktopServer1.Shutdown();
+            var data = new BinaryByte(Convert.ToString(510892, 2));
+            MessageBox.Show(data);
+            MessageBox.Show((new BinaryByte("a") > "b").ToString());
         }
 
         private void Main_Load(object sender, System.EventArgs e)

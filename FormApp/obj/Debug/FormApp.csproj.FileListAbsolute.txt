@@ -85,6 +85,9 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\FormApp\obj\D
 C:\Users\Gustavo\Desktop\Programs\.Projects\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.pdb
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Debug\FormApp.exe
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Debug\FormApp.pdb
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Debug\CSharpExtendedCommands.dll
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\bin\Debug\CSharpExtendedCommands.pdb
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csprojAssemblyReference.cache
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\Interop.IWshRuntimeLibrary.dll
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csproj.ResolveComReference.cache
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\UserControl1.g.cs
@@ -92,6 +95,8 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp_MarkupCompile.lref
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\UserControl1.baml
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.g.resources
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Client.resources
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Main.resources
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Form1.resources
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Properties.Resources.resources
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csproj.GenerateResource.cache
@@ -99,6 +104,3 @@ C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csproj.CopyComplete
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.exe
 C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.pdb
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Client.resources
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.Dialogs.Main.resources
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Debug\FormApp.csprojAssemblyReference.cache

@@ -89,7 +89,6 @@
     <Compile Include="Animated Button.Designer.cs">
       <DependentUpon>Animated Button.cs</DependentUpon>
     </Compile>
-    <Compile Include="CSharpExtendedCommands.cs" />
     <Compile Include="Dialogs\Client.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -184,6 +183,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CSharpExtendedCommands\CSharpExtendedCommands.csproj">
+      <Project>{5f68ba61-df32-4cf6-ab2c-b788f25541e1}</Project>
+      <Name>CSharpExtendedCommands</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

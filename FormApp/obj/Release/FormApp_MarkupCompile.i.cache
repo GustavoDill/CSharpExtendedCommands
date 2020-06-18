@@ -4,7 +4,7 @@
 winexe
 C#
 .cs
-D:\.ProgramsVS\.Projects\CSharpExtendedCommands\FormApp\obj\Release\
+C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\
 FormApp
 none
 false
@@ -12,8 +12,8 @@ TRACE
 
 1-98425716
 
-12-1452314417
-26621210817
+17-1524129278
+261964105218
 UserControl1.xaml;
 
 True

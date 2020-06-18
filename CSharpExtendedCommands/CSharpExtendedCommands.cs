@@ -1,7 +1,5 @@
 ﻿using CSharpExtendedCommands.Data.SimpleJSON;
-using CSharpExtendedCommands.DataTypeExtensions;
 using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
-using CSharpExtendedCommands.Info;
 using Microsoft.CSharp;
 using System;
 using System.CodeDom.Compiler;
@@ -32,8 +30,14 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using static CSharpExtendedCommands.Converter;
 using Timer = System.Windows.Forms.Timer;
+using static CSharpExtendedCommands.Converter;
+using CSharpExtendedCommands.DataTypeExtensions.Converters;
+using CSharpExtendedCommands.DataTypeExtensions;
+using CSharpExtendedCommands.Info;
+using System.Security.Policy;
+using System.Data.SqlTypes;
+using System.Web.SessionState;
 
 namespace CSharpExtendedCommands
 {
@@ -13434,6 +13438,115 @@ namespace CSharpExtendedCommands
                 }
             }
         }
+        namespace Collections
+        {
+            public static class CollectionsExtension
+            {
+
+                public static T[] Search<T>(this T[] obj, string search, string propname) => obj.Search(search, propname, false);
+                public static List<T> Search<T>(this List<T> obj, string search, string propname, bool caseSensitive) => obj.ToArray().Search(search, propname, caseSensitive).ToList();
+                public static List<T> Search<T>(this List<T> obj, string search, string propname) => obj.ToList().Search(search, propname, false);
+                public static List<string> Search(this List<string> obj, string search) => Search(obj.ToArray(), search).ToList();
+                public static List<string> Search(this List<string> obj, string search, bool caseSensitive) => Search(obj.ToArray(), search, caseSensitive).ToList();
+                public static string[] Search(this string[] obj, string search) => Search(obj, search, false);
+                public static string[] Search(this string[] obj, string search, bool caseSensitive)
+                {
+                    if (caseSensitive)
+                    {
+                        List<string> ret = new List<string>();
+                        foreach (var o in obj)
+                            if (o.Contains(search))
+                                ret.Add(o);
+                        return ret.ToArray();
+                    }
+                    else
+                    {
+                        List<string> ret = new List<string>();
+                        foreach (var o in obj)
+                            if (o.ToLower().Contains(search.ToLower()))
+                                ret.Add(o);
+                        return ret.ToArray();
+                    }
+                }
+                public static T[] Search<T>(this T[] obj, string search, string propname, bool caseSensitive)
+                {
+                    List<T> res = new List<T>();
+                    foreach (var o in obj)
+                        try { if (caseSensitive) if (o.GetType().GetProperty(propname).GetValue(o, null).ToString().Contains(search)) res.Add(o); else { } else if (o.GetType().GetProperty(propname).GetValue(o, null).ToString().ToLower().Contains(search.ToLower())) res.Add(o); }
+                        catch { }
+                    return res.ToArray();
+                }
+                public static ResultType[] GetPropertyArray<ResultType>(this object[] obj, string propname)
+                {
+                    List<ResultType> props = new List<ResultType>();
+                    foreach (var o in obj)
+                        props.Add((ResultType)o.GetType().GetProperty(propname).GetValue(o, null));
+                    return props.ToArray();
+                }
+                public static object[] ToObjectArray<T>(this T[] obj)
+                {
+                    List<object> objs = new List<object>();
+                    foreach (var o in obj)
+                        objs.Add((object)o);
+                    return objs.ToArray();
+                }
+                public static Enumerator GetEnum<Enumerator>(this string obj, Enumerator defaultReturn) where Enumerator : Enum
+                {
+                    foreach (var val in Enum.GetNames(typeof(Enumerator)))
+                        if (val.ToString().ToLower() == obj.ToLower()) return (Enumerator)Enum.Parse(typeof(Enumerator), val);
+                    return defaultReturn;
+                }
+                public static Enumerator GetEnum<Enumerator>(this int obj, Enumerator defaultReturn) where Enumerator : Enum
+                {
+                    foreach (var val in Enum.GetNames(typeof(Enumerator)))
+                        if ((int)Enum.Parse(typeof(Enumerator), val) == obj)
+                            return (Enumerator)Enum.Parse(typeof(Enumerator), val);
+                    return defaultReturn;
+                }
+            }
+        }
+        namespace Formatting
+        {
+            public static class FormattingExtensions
+            {
+                public static string FormatAsXML(this string v)
+                {
+                    return Data.Format.XML(v);
+                }
+                public static string FormatAsJSON(this string v)
+                {
+                    return Data.Format.JSON(v);
+                }
+                public static string FormatAsJSON(this string v, string Indent)
+                {
+                    return Data.Format.JSON(v, Indent);
+                }
+                public static string FormatAsJS(this string v)
+                {
+                    return Data.Format.JS(v);
+                }
+                public static string FormatAsJS(this string v, char indent_char, int indent_size, int indent_level)
+                {
+                    return Data.Format.JS(v, indent_char, indent_size, indent_level);
+                }
+                public static string FormatAsJS(this string v, char indent_char)
+                {
+                    return Data.Format.JS(v, indent_char);
+                }
+                public static string FormatAsJS(this string v, char indent_char, int indent_size)
+                {
+                    return Data.Format.JS(v, indent_char, indent_size);
+                }
+                public static string FormatAsJS(this string v, int indent_size)
+                {
+                    return Data.Format.JS(v, indent_size);
+                }
+                public static string FormatAsJS(this string v, int indent_level, char indent_char = ' ')
+                {
+                    return Data.Format.JS(v, indent_level, indent_char);
+                }
+            }
+        }
         public static class GeneralClassExtensions
         {
             #region PrivateMembers
@@ -13452,72 +13565,7 @@ namespace CSharpExtendedCommands
             #endregion
             #region GeneralClasses
             public static bool IsOdd(this int v) => v % 2 != 0;
-            public static Enumerator GetEnum<Enumerator>(this string obj, Enumerator defaultReturn) where Enumerator : Enum
-            {
-                foreach (var val in Enum.GetNames(typeof(Enumerator)))
-                    if (val.ToString().ToLower() == obj.ToLower()) return (Enumerator)Enum.Parse(typeof(Enumerator), val);
-                return defaultReturn;
-            }
-            public static Enumerator GetEnum<Enumerator>(this int obj, Enumerator defaultReturn) where Enumerator : Enum
-            {
-                foreach (var val in Enum.GetNames(typeof(Enumerator)))
-                    if ((int)Enum.Parse(typeof(Enumerator), val) == obj)
-                        return (Enumerator)Enum.Parse(typeof(Enumerator), val);
-                return defaultReturn;
-            }
-            public static void Add<T>(this List<T> list, List<T> add)
-            {
-                foreach (var val in add)
-                    list.Add(val);
-            }
-            public static bool ToBool(this string v) => (v == "true" || v == "1");
-            public static T[] Search<T>(this T[] obj, string search, string propname) => obj.Search(search, propname, false);
-            public static List<T> Search<T>(this List<T> obj, string search, string propname, bool caseSensitive) => obj.ToArray().Search(search, propname, caseSensitive).ToList();
-            public static List<T> Search<T>(this List<T> obj, string search, string propname) => obj.ToList().Search(search, propname, false);
-            public static List<string> Search(this List<string> obj, string search) => Search(obj.ToArray(), search).ToList();
-            public static List<string> Search(this List<string> obj, string search, bool caseSensitive) => Search(obj.ToArray(), search, caseSensitive).ToList();
-            public static string[] Search(this string[] obj, string search) => Search(obj, search, false);
-            public static string[] Search(this string[] obj, string search, bool caseSensitive)
-            {
-                if (caseSensitive)
-                {
-                    List<string> ret = new List<string>();
-                    foreach (var o in obj)
-                        if (o.Contains(search))
-                            ret.Add(o);
-                    return ret.ToArray();
-                }
-                else
-                {
-                    List<string> ret = new List<string>();
-                    foreach (var o in obj)
-                        if (o.ToLower().Contains(search.ToLower()))
-                            ret.Add(o);
-                    return ret.ToArray();
-                }
-            }
-            public static T[] Search<T>(this T[] obj, string search, string propname, bool caseSensitive)
-            {
-                List<T> res = new List<T>();
-                foreach (var o in obj)
-                    try { if (caseSensitive) if (o.GetType().GetProperty(propname).GetValue(o, null).ToString().Contains(search)) res.Add(o); else { } else if (o.GetType().GetProperty(propname).GetValue(o, null).ToString().ToLower().Contains(search.ToLower())) res.Add(o); }
-                    catch { }
-                return res.ToArray();
-            }
-            public static ResultType[] GetPropertyArray<ResultType>(this object[] obj, string propname)
-            {
-                List<ResultType> props = new List<ResultType>();
-                foreach (var o in obj)
-                    props.Add((ResultType)o.GetType().GetProperty(propname).GetValue(o, null));
-                return props.ToArray();
-            }
-            public static object[] ToObjectArray<T>(this T[] obj)
-            {
-                List<object> objs = new List<object>();
-                foreach (var o in obj)
-                    objs.Add((object)o);
-                return objs.ToArray();
-            }
+            public static bool ToBool(this string v) => Regex.IsMatch(v, "([tT][rR][uU][eE]|1)");
             public static object ToObject<T>(this T obj) => (object)obj;
             public static IEnumerable<Web.HtmlAgilityPack.HtmlNode> GetElementsByName(this Web.HtmlAgilityPack.HtmlNode parent, string name)
             {
@@ -13605,73 +13653,157 @@ namespace CSharpExtendedCommands
                 return dirs.ToArray();
             }
             #endregion
-            #region Formatting
-            public static string FormatAsXML(this string v)
+        }
+        namespace Converters
+        {
+            public static class ConvertersExtension
             {
-                return Data.Format.XML(v);
+                public static string ToHex(this int v)
+                {
+                    return DecimalToHexadecimal(v);
+                }
+                public static string ToBinary(this int v)
+                {
+                    return IntToBinary(v);
+                }
+                public static int ToOctal(this int v)
+                {
+                    return int.Parse(DecimalToOctal(v));
+                }
+                public static int ToInt(this string v)
+                {
+                    if (v.StartsWith("0x"))
+                        return HexadecimalToDecimal(v);
+                    else
+                    {
+                        try { return int.Parse(v); } catch { return -1; }
+                    }
+                }
+                public static string ToBinary(this string v)
+                {
+                    return TextToBinary(v);
+                }
+                public static string ToHex(this string v)
+                {
+                    return TextToHexadecimal(v);
+                }
             }
-            public static string FormatAsJSON(this string v)
+        }
+    }
+    namespace DataTypes
+    {
+        public class BinaryByte
+        {
+            string _binData;
+            public BinaryByte(byte b)
             {
-                return Data.Format.JSON(v);
+                _binData = IntToBinary(b);
+                ProcessData();
             }
-            public static string FormatAsJSON(this string v, string Indent)
+            public BinaryByte(string text)
             {
-                return Data.Format.JSON(v, Indent);
+                _binData = TextToBinary(text);
+                ProcessData();
             }
-            public static string FormatAsJS(this string v)
+            internal BinaryByte(string binary, bool directConvert)
             {
-                return Data.Format.JS(v);
+                _binData = binary;
+                ProcessData();
             }
-            public static string FormatAsJS(this string v, char indent_char, int indent_size, int indent_level)
+            public static BinaryByte FromBinary(string binary)
             {
-                return Data.Format.JS(v, indent_char, indent_size, indent_level);
+                return new BinaryByte(binary, true);
             }
-            public static string FormatAsJS(this string v, char indent_char)
+            public static bool operator ==(BinaryByte left, BinaryByte right) => left.ToString() == right.ToString();
+            public static bool operator !=(BinaryByte left, BinaryByte right) => left.ToString() != right.ToString();
+            public static bool operator >(BinaryByte left, BinaryByte right) => (int)left > right;
+            public static bool operator <(BinaryByte left, BinaryByte right) => (int)left < right;
+            public static bool operator >=(BinaryByte left, BinaryByte right) => (int)left >= right;
+            public static bool operator <=(BinaryByte left, BinaryByte right) => (int)left <= right;
+            public static bool operator ==(int left, BinaryByte right) => left == (int)right;
+            public static bool operator !=(int left, BinaryByte right) => left != (int)right;
+            public static bool operator >(int left, BinaryByte right) => left > (int)right;
+            public static bool operator <(int left, BinaryByte right) => left < (int)right;
+            public static bool operator <=(int left, BinaryByte right) => left <= (int)right;
+            public static bool operator >=(int left, BinaryByte right) => left >= (int)right;
+            public static bool operator ==(BinaryByte left, int right) => (int)left == right;
+            public static bool operator !=(BinaryByte left, int right) => (int)left != right;
+            public static bool operator >(BinaryByte left, int right) => (int)left > right;
+            public static bool operator <(BinaryByte left, int right) => (int)left < right;
+            public static bool operator <=(BinaryByte left, int right) => (int)left <= right;
+            public static bool operator >=(BinaryByte left, int right) => (int)left >= right;
+            public static bool operator >(BinaryByte left, string right) => left > new BinaryByte(TextToBinary(right));
+            public static bool operator >(string left, BinaryByte right) => new BinaryByte(TextToBinary(left)) > right;
+            public static bool operator <(BinaryByte left, string right) => left < new BinaryByte(TextToBinary(right));
+            public static bool operator <(string left, BinaryByte right) => new BinaryByte(TextToBinary(left)) < right;
+            public static bool operator >=(BinaryByte left, string right) => left >= new BinaryByte(TextToBinary(right));
+            public static bool operator <=(BinaryByte left, string right) => left <= new BinaryByte(TextToBinary(right));
+            public static bool operator ==(BinaryByte left, string right) => left.ToString() == right;
+            public static bool operator !=(BinaryByte left, string right) => left.ToString() != right;
+            public static bool operator ==(string left, BinaryByte right) => left == right.ToString();
+            public static bool operator !=(string left, BinaryByte right) => left != right.ToString();
+            public static implicit operator int(BinaryByte b)=>Convert.ToInt32(b.ToString().Replace(" ", ""), 2);
+            public static implicit operator string(BinaryByte b) => b.ToString();
+            public static implicit operator bool(BinaryByte b) => b > 0;
+            public static implicit operator BinaryByte(string v)
             {
-                return Data.Format.JS(v, indent_char);
+                return new BinaryByte(v);
             }
-            public static string FormatAsJS(this string v, char indent_char, int indent_size)
+            public static implicit operator BinaryByte(int v)
             {
-                return Data.Format.JS(v, indent_char, indent_size);
+                return new BinaryByte(v);
             }
-            public static string FormatAsJS(this string v, int indent_size)
+            public static implicit operator BinaryByte(bool v)
             {
-                return Data.Format.JS(v, indent_size);
+                if (v)
+                    return new BinaryByte(1);
+                else return new BinaryByte(0);
             }
-            public static string FormatAsJS(this string v, int indent_level, char indent_char = ' ')
+            public static implicit operator BinaryByte(byte b)
             {
-                return Data.Format.JS(v, indent_level, indent_char);
+                return new BinaryByte(b);
             }
-            #endregion
-            #region Converter
-            public static string ToHex(this int v)
+            public static implicit operator byte[](BinaryByte v)
             {
-                return DecimalToHexadecimal(v);
+                var data = v.ToString().Replace(" ", "");
+                if (data.Length < 8)
+                    return new byte[] { Convert.ToByte((int)v) };
+                if (data.Length % 8 != 0)
+                    data = data.PadLeft((data.Length / 8 + 1 )*2, '0');
+                List<byte> bytes = new List<byte>();
+                for (int i = 0; i < data.Length; i++)
+                    bytes.Add(Convert.ToByte(Convert.ToInt32(data.Substring(i, 8), 2)));
+                return bytes.ToArray();
             }
-            public static string ToBinary(this int v)
+            public static implicit operator sbyte[](BinaryByte v)
             {
-                return DecimalToBinary(v);
+                List<sbyte> sbytes = new List<sbyte>();
+                foreach (var bit in v.ToString().Split(' '))
+                    sbytes.Add(Convert.ToSByte(Convert.ToInt16(bit, 2)));
+                return sbytes.ToArray();
             }
-            public static int ToOctal(this int v)
+            public BinaryByte(int number)
             {
-                return int.Parse(DecimalToOctal(v));
+                _binData = Convert.ToString(number, 2);
+                ProcessData();
             }
-            public static int ToInt(this string v)
+            void ProcessData()
             {
-                if (v.ToUpper().Contains("A") || v.ToUpper().Contains("B") || v.ToUpper().Contains("C") || v.ToUpper().Contains("D") || v.ToUpper().Contains("E") || v.ToUpper().Contains("F"))
-                    return HexadecimalToDecimal(v);
-                else
-                    return int.Parse(v);
+                if (_binData.Length % 4 == 0)
+                    return;
+                if (_binData.Length < 4)
+                { _binData = _binData.PadLeft(4, '0'); return; }
+                int res = 4 - (_binData.Length % 4);
+                for (int i = 0; i < res; i++)
+                    _binData = "0" + _binData;
             }
-            public static string ToBinary(this string v)
+            public override string ToString()
             {
-                return TextToBinary(v);
+                string r = "";
+                for (int i = 0; i < _binData.Length; i += 4)
+                    r += " " +_binData.Substring(i, 4);
+                return r.Substring(1);
             }
-            public static string ToHex(this string v)
-            {
-                return TextToHexadecimal(v);
-            }
-            #endregion
         }
     }
     namespace Data
@@ -20280,13 +20412,16 @@ namespace CSharpExtendedCommands
     }
     public static class Converter
     {
-        public static string[] ByteStringToByteArray(string Bytes)
+        public static string[] ByteStringToByteArray(string bytes)
         {
             int Cur = 0;
-            string[] ByteArray = new string[Bytes.Length / 2];
+            string w = bytes;
+            if (w.Length % 2 != 0)
+                w = "0" + w;
+            string[] ByteArray = new string[w.Length / 2];
             string temp = null;
             int index = 0;
-            for (int i = 0; i <= Bytes.Length; i++)
+            for (int i = 0; i <= w.Length; i++)
             {
                 if (Cur == 2)
                 {
@@ -20298,13 +20433,9 @@ namespace CSharpExtendedCommands
                 }
                 else
                 {
-                    if (i == Bytes.Length)
+                    if (i != w.Length)
                     {
-
-                    }
-                    else
-                    {
-                        temp += Bytes.Substring(i, 1);
+                        temp += w.Substring(i, 1);
                         Cur++;
                     }
                 }
@@ -20315,26 +20446,25 @@ namespace CSharpExtendedCommands
         {
             string Data = null;
             foreach (string bt in Bytes)
-            {
                 Data += bt;
-            }
             return Data;
         }
         public static string ReverseByteOrder(string Bytes)
         {
             string FinalResult = null;
-            for (int Cur = ByteStringToByteArray(Bytes).Length - 1; Cur >= 0; Cur--)
+            var ar = ByteStringToByteArray(Bytes);
+            for (int Cur = ar.Length - 1; Cur >= 0; Cur--)
             {
-                FinalResult += ByteStringToByteArray(Bytes)[Cur];
+                FinalResult += ar[Cur];
             }
             return FinalResult;
         }
         public static string HexadecimalToBinary(string HexNumber)
         {
             int dec = HexadecimalToDecimal(HexNumber);
-            return DecimalToBinary(dec);
+            return IntToBinary(dec);
         }
-        public static string DecimalToBinary(int Number)
+        public static string IntToBinary(int Number)
         {
             return Convert.ToString(Number, 2);
         }
@@ -20473,9 +20603,8 @@ namespace CSharpExtendedCommands
         {
             return Convert.ToString(Number, 8);
         }
-        public static int OctalToDecimal(int OctalNumber)
+        public static int OctalToDecimal(int octal)
         {
-            var octal = OctalNumber;
             var dec = 0;
             var remain = octal;
             var i = 0;
