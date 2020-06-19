@@ -17599,6 +17599,2284 @@ namespace CSharpExtendedCommands
 
     namespace UI
     {
+        namespace CSWinAnimator
+        {
+            public class Animation
+            {
+                [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), EditorBrowsable(EditorBrowsableState.Advanced), TypeConverter(typeof(PointFConverter))]
+                public PointF SlideCoeff { get; set; }
+
+                public float RotateCoeff { get; set; }
+                public float RotateLimit { get; set; }
+
+                [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), EditorBrowsable(EditorBrowsableState.Advanced), TypeConverter(typeof(PointFConverter))]
+                public PointF ScaleCoeff { get; set; }
+
+                public float TransparencyCoeff { get; set; }
+                public float LeafCoeff { get; set; }
+
+                [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), EditorBrowsable(EditorBrowsableState.Advanced), TypeConverter(typeof(PointFConverter))]
+                public PointF MosaicShift { get; set; }
+
+                [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), EditorBrowsable(EditorBrowsableState.Advanced), TypeConverter(typeof(PointFConverter))]
+                public PointF MosaicCoeff { get; set; }
+
+                public int MosaicSize { get; set; }
+
+                [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible), EditorBrowsable(EditorBrowsableState.Advanced), TypeConverter(typeof(PointFConverter))]
+                public PointF BlindCoeff { get; set; }
+
+                public float TimeCoeff { get; set; }
+                public float MinTime { get; set; }
+                public float MaxTime { get; set; }
+                public Padding Padding { get; set; }
+                public bool AnimateOnlyDifferences { get; set; }
+
+                public bool IsNonLinearTransformNeeded
+                {
+                    get
+                    {
+                        if (BlindCoeff == PointF.Empty)
+                            if (MosaicCoeff == PointF.Empty || MosaicSize == 0)
+                                if (TransparencyCoeff == 0f)
+                                    if (LeafCoeff == 0f)
+                                        return false;
+
+                        return true;
+                    }
+                }
+
+                public Animation()
+                {
+                    MinTime = 0f;
+                    MaxTime = 1f;
+                    AnimateOnlyDifferences = true;
+                }
+
+
+                public Animation Clone()
+                {
+                    return (Animation)MemberwiseClone();
+                }
+
+
+                public static Animation Rotate { get { return new Animation { RotateCoeff = 1f, TransparencyCoeff = 1, Padding = new Padding(50, 50, 50, 50) }; } }
+                public static Animation HorizSlide { get { return new Animation { SlideCoeff = new PointF(1, 0) }; } }
+                public static Animation VertSlide { get { return new Animation { SlideCoeff = new PointF(0, 1) }; } }
+                public static Animation Scale { get { return new Animation { ScaleCoeff = new PointF(1, 1) }; } }
+                public static Animation ScaleAndRotate { get { return new Animation { ScaleCoeff = new PointF(1, 1), RotateCoeff = 0.5f, RotateLimit = 0.2f, Padding = new Padding(30, 30, 30, 30) }; } }
+                public static Animation HorizSlideAndRotate { get { return new Animation { SlideCoeff = new PointF(1, 0), RotateCoeff = 0.3f, RotateLimit = 0.2f, Padding = new Padding(50, 50, 50, 50) }; } }
+                public static Animation ScaleAndHorizSlide { get { return new Animation { ScaleCoeff = new PointF(1, 1), SlideCoeff = new PointF(1, 0), Padding = new Padding(30, 0, 0, 0) }; } }
+                public static Animation Transparent { get { return new Animation { TransparencyCoeff = 1 }; } }
+                public static Animation Leaf { get { return new Animation { LeafCoeff = 1 }; } }
+                public static Animation Mosaic { get { return new Animation { MosaicCoeff = new PointF(100f, 100f), MosaicSize = 20, Padding = new Padding(30, 30, 30, 30) }; } }
+                public static Animation Particles { get { return new Animation { MosaicCoeff = new PointF(200, 200), MosaicSize = 1, MosaicShift = new PointF(0, 0.5f), Padding = new Padding(100, 50, 100, 150), TimeCoeff = 2 }; } }
+                public static Animation VertBlind { get { return new Animation { BlindCoeff = new PointF(0f, 1f) }; } }
+                public static Animation HorizBlind { get { return new Animation { BlindCoeff = new PointF(1f, 0f) }; } }
+
+
+
+                public void Add(Animation a)
+                {
+                    SlideCoeff = new PointF(SlideCoeff.X + a.SlideCoeff.X, SlideCoeff.Y + a.SlideCoeff.Y);
+                    RotateCoeff += a.RotateCoeff;
+                    RotateLimit += a.RotateLimit;
+                    ScaleCoeff = new PointF(ScaleCoeff.X + a.ScaleCoeff.X, ScaleCoeff.Y + a.ScaleCoeff.Y);
+                    TransparencyCoeff += a.TransparencyCoeff;
+                    LeafCoeff += a.LeafCoeff;
+                    MosaicShift = new PointF(MosaicShift.X + a.MosaicShift.X, MosaicShift.Y + a.MosaicShift.Y);
+                    MosaicCoeff = new PointF(MosaicCoeff.X + a.MosaicCoeff.X, MosaicCoeff.Y + a.MosaicCoeff.Y);
+                    MosaicSize += a.MosaicSize;
+                    BlindCoeff = new PointF(BlindCoeff.X + a.BlindCoeff.X, BlindCoeff.Y + a.BlindCoeff.Y);
+                    TimeCoeff += a.TimeCoeff;
+                    Padding += a.Padding;
+                }
+            }
+
+            public enum AnimationType
+            {
+                Custom = 0,
+                Rotate,
+                HorizSlide,
+                VertSlide,
+                Scale,
+                ScaleAndRotate,
+                HorizSlideAndRotate,
+                ScaleAndHorizSlide,
+                Transparent,
+                Leaf,
+                Mosaic,
+                Particles,
+                VertBlind,
+                HorizBlind
+            }
+            public partial class TabControlEx : System.Windows.Forms.TabControl
+            {
+                Animator animator;
+
+                public TabControlEx()
+                {
+                    InitializeComponent();
+                    animator = new Animator();
+                    animator.AnimationType = AnimationType.VertSlide;
+                    animator.DefaultAnimation.TimeCoeff = 1f;
+                    animator.DefaultAnimation.AnimateOnlyDifferences = false;
+                }
+                private System.ComponentModel.IContainer components = null;
+
+                /// <summary> 
+                /// Clean up any resources being used.
+                /// </summary>
+                /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+                protected override void Dispose(bool disposing)
+                {
+                    if (disposing && (components != null))
+                    {
+                        components.Dispose();
+                    }
+                    base.Dispose(disposing);
+                }
+
+                #region Component Designer generated code
+
+                /// <summary> 
+                /// Required method for Designer support - do not modify 
+                /// the contents of this method with the code editor.
+                /// </summary>
+                private void InitializeComponent()
+                {
+                    components = new System.ComponentModel.Container();
+                }
+
+                #endregion
+                [TypeConverter(typeof(ExpandableObjectConverter))]
+                public Animation Animation
+                {
+                    get { return animator.DefaultAnimation; }
+                    set { animator.DefaultAnimation = value; }
+                }
+
+                protected override void OnSelecting(TabControlCancelEventArgs e)
+                {
+                    base.OnSelecting(e);
+                    animator.BeginUpdate(this, false, null, new Rectangle(0, ItemSize.Height + 3, Width, Height - ItemSize.Height - 3));
+                    BeginInvoke(new MethodInvoker(() => animator.EndUpdate(this)));
+                }
+            }
+            [ProvideProperty("Decoration", typeof(Control))]
+            public class Animator : Component, IExtenderProvider
+            {
+                IContainer components = null;
+                protected List<QueueItem> queue = new List<QueueItem>();
+                private Thread thread;
+                Timer timer;
+
+                /// <summary>
+                /// Occurs when animation of the control is completed
+                /// </summary>
+                public event EventHandler<AnimationCompletedEventArg> AnimationCompleted;
+                /// <summary>
+                /// Ocuurs when all animations are completed
+                /// </summary>
+                public event EventHandler AllAnimationsCompleted;
+                /// <summary>
+                /// Occurs when needed transform matrix
+                /// </summary>
+                public event EventHandler<TransfromNeededEventArg> TransfromNeeded;
+                /// <summary>
+                /// Occurs when needed non-linear transformation
+                /// </summary>
+                public event EventHandler<NonLinearTransfromNeededEventArg> NonLinearTransfromNeeded;
+                /// <summary>
+                /// Occurs when user click on the animated control
+                /// </summary>
+                public event EventHandler<MouseEventArgs> MouseDown;
+                /// <summary>
+                /// Occurs when frame of animation is painting
+                /// </summary>
+                public event EventHandler<PaintEventArgs> FramePainted;
+
+                /// <summary>
+                /// Max time of animation (ms)
+                /// </summary>
+                [DefaultValue(1500)]
+                public int MaxAnimationTime { get; set; }
+
+                /// <summary>
+                /// Default animation
+                /// </summary>
+                [TypeConverter(typeof(ExpandableObjectConverter))]
+                public Animation DefaultAnimation { get; set; }
+
+                /// <summary>
+                /// Cursor of animated control
+                /// </summary>
+                [DefaultValue(typeof(Cursor), "Default")]
+                public Cursor Cursor { get; set; }
+
+                /// <summary>
+                /// Are all animations completed?
+                /// </summary>
+                public bool IsCompleted
+                {
+                    get { lock (queue) return queue.Count == 0; }
+                }
+
+                /// <summary>
+                /// Interval between frames (ms)
+                /// </summary>
+                [DefaultValue(10)]
+                public int Interval
+                {
+                    get;
+                    set;
+                }
+
+                AnimationType animationType;
+                /// <summary>
+                /// Type of built-in animation
+                /// </summary>
+                public AnimationType AnimationType
+                {
+                    get { return animationType; }
+                    set { animationType = value; InitDefaultAnimation(animationType); }
+                }
+
+                public Animator()
+                {
+                    Init();
+                }
+
+                public Animator(IContainer container)
+                {
+                    container.Add(this);
+                    Init();
+                }
+
+                protected virtual void Init()
+                {
+                    AnimationType = AnimationType.VertSlide;
+                    DefaultAnimation = new Animation();
+                    MaxAnimationTime = 1500;
+                    TimeStep = 0.02f;
+                    Interval = 10;
+
+                    Disposed += new EventHandler(Animator_Disposed);
+
+                    timer = new Timer();
+                    timer.Tick += new EventHandler(timer_Tick);
+                    timer.Interval = 1;
+                    timer.Start();
+                }
+
+                private void Start()
+                {
+                    //main working thread
+                    thread = new Thread(Work);
+                    thread.IsBackground = true;
+                    thread.Name = "Animator thread";
+                    thread.Start();
+                }
+
+                Control invokerControl;
+
+                void timer_Tick(object sender, EventArgs e)
+                {
+                    timer.Stop();
+                    //create invoker in main UI therad
+                    invokerControl = new Control();
+                    invokerControl.CreateControl();
+                    //
+                    Start();
+                }
+
+                void Animator_Disposed(object sender, EventArgs e)
+                {
+                    ClearQueue();
+                    if (thread != null)
+                        thread.Abort();
+                }
+
+                void Work()
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(Interval);
+                        try
+                        {
+                            var count = 0;
+                            var completed = new List<QueueItem>();
+                            var actived = new List<QueueItem>();
+
+                            //find completed
+                            lock (queue)
+                            {
+                                count = queue.Count;
+                                var wasActive = false;
+
+                                foreach (var item in queue)
+                                {
+                                    if (item.IsActive) wasActive = true;
+
+                                    if (item.controller != null && item.controller.IsCompleted)
+                                        completed.Add(item);
+                                    else
+                                    {
+                                        if (item.IsActive)
+                                        {
+                                            if ((DateTime.Now - item.ActivateTime).TotalMilliseconds > MaxAnimationTime)
+                                                completed.Add(item);
+                                            else
+                                                actived.Add(item);
+                                        }
+                                    }
+                                }
+                                //start next animation
+                                if (!wasActive)
+                                    foreach (var item in queue)
+                                        if (!item.IsActive)
+                                        {
+                                            actived.Add(item);
+                                            item.IsActive = true;
+                                            break;
+                                        }
+                            }
+
+                            //completed
+                            foreach (var item in completed)
+                                OnCompleted(item);
+
+                            //build next frame of DoubleBitmap
+                            foreach (var item in actived)
+                                try
+                                {
+                                    var item2 = item;
+                                    //build next frame of DoubleBitmap
+                                    //item.control.BeginInvoke(new MethodInvoker(() => DoAnimation(item2)));
+                                    invokerControl.BeginInvoke(new MethodInvoker(() => DoAnimation(item2)));
+                                }
+                                catch
+                                {
+                                    //we can not start animation, remove from queue
+                                    OnCompleted(item);
+                                }
+
+                            if (count == 0)
+                            {
+                                if (completed.Count > 0)
+                                    OnAllAnimationsCompleted();
+                                CheckRequests();
+                            }
+                        }
+                        catch
+                        {
+                            //form was closed
+                        }
+                    }
+                }
+
+                /// <summary>
+                /// Check result state of controls
+                /// </summary>
+                private void CheckRequests()
+                {
+                    var toRemove = new List<QueueItem>();
+
+                    lock (requests)
+                    {
+                        var dict = new Dictionary<Control, QueueItem>();
+                        foreach (var item in requests)
+                            if (item.control != null)
+                            {
+                                if (dict.ContainsKey(item.control))
+                                    toRemove.Add(dict[item.control]);
+                                dict[item.control] = item;
+                            }
+                            else
+                                toRemove.Add(item);
+
+                        foreach (var item in dict.Values)
+                        {
+                            if (item.control != null && !IsStateOK(item.control, item.mode))
+                            {
+                                if (invokerControl != null)
+                                    RepairState(item.control, item.mode);
+                            }
+                            else
+                                toRemove.Add(item);
+                        }
+
+                        foreach (var item in toRemove)
+                            requests.Remove(item);
+                    }
+                }
+
+                bool IsStateOK(Control control, AnimateMode mode)
+                {
+                    switch (mode)
+                    {
+                        case AnimateMode.Hide: return !control.Visible;
+                        case AnimateMode.Show: return control.Visible;
+                    }
+
+                    return true;
+                }
+
+                void RepairState(Control control, AnimateMode mode)
+                {
+                    invokerControl.Invoke(new MethodInvoker(() =>
+                    {
+                        try
+                        {
+                            switch (mode)
+                            {
+                                case AnimateMode.Hide:
+                                    control.Visible = false;
+                                    break;
+                                case AnimateMode.Show:
+                                    control.Visible = true;
+                                    break;
+                            }
+                        }
+                        catch
+                        {
+                            //form was closed
+                        }
+                    }));
+                }
+
+                int counter;
+
+                private void DoAnimation(QueueItem item)
+                {
+                    lock (item)
+                    {
+                        try
+                        {
+                            if (item.controller == null)
+                            {
+                                item.controller = CreateDoubleBitmap(item.control, item.mode, item.animation,
+                                                                     item.clipRectangle);
+                            }
+                            if (item.controller.IsCompleted)
+                                return;
+                            item.controller.BuildNextFrame();
+                        }
+                        catch
+                        {
+                            if (item.controller != null)
+                                item.controller.Dispose();
+                            OnCompleted(item);
+                        }
+                    }
+                }
+
+                private void InitDefaultAnimation(AnimationType animationType)
+                {
+                    switch (animationType)
+                    {
+                        case AnimationType.Custom: break;
+                        case AnimationType.Rotate: DefaultAnimation = Animation.Rotate; break;
+                        case AnimationType.HorizSlide: DefaultAnimation = Animation.HorizSlide; break;
+                        case AnimationType.VertSlide: DefaultAnimation = Animation.VertSlide; break;
+                        case AnimationType.Scale: DefaultAnimation = Animation.Scale; break;
+                        case AnimationType.ScaleAndRotate: DefaultAnimation = Animation.ScaleAndRotate; break;
+                        case AnimationType.HorizSlideAndRotate: DefaultAnimation = Animation.HorizSlideAndRotate; break;
+                        case AnimationType.ScaleAndHorizSlide: DefaultAnimation = Animation.ScaleAndHorizSlide; break;
+                        case AnimationType.Transparent: DefaultAnimation = Animation.Transparent; break;
+                        case AnimationType.Leaf: DefaultAnimation = Animation.Leaf; break;
+                        case AnimationType.Mosaic: DefaultAnimation = Animation.Mosaic; break;
+                        case AnimationType.Particles: DefaultAnimation = Animation.Particles; break;
+                        case AnimationType.VertBlind: DefaultAnimation = Animation.VertBlind; break;
+                        case AnimationType.HorizBlind: DefaultAnimation = Animation.HorizBlind; break;
+                    }
+                }
+
+                /// <summary>
+                /// Time step
+                /// </summary>
+                [DefaultValue(0.02f)]
+                public float TimeStep { get; set; }
+
+                /// <summary>
+                /// Shows the control. As result the control will be shown with animation.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param>
+                public void Show(Control control, bool parallel = false, Animation animation = null)
+                {
+                    AddToQueue(control, AnimateMode.Show, parallel, animation);
+                }
+
+                /// <summary>
+                /// Shows the control and waits while animation will be completed. As result the control will be shown with animation.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param>
+                public void ShowSync(Control control, bool parallel = false, Animation animation = null)
+                {
+                    Show(control, parallel, animation);
+                    WaitAnimation(control);
+                }
+
+                /// <summary>
+                /// Hides the control. As result the control will be hidden with animation.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param>
+                public void Hide(Control control, bool parallel = false, Animation animation = null)
+                {
+                    AddToQueue(control, AnimateMode.Hide, parallel, animation);
+                }
+
+                /// <summary>
+                /// Hides the control and waits while animation will be completed. As result the control will be hidden with animation.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param>
+                public void HideSync(Control control, bool parallel = false, Animation animation = null)
+                {
+                    Hide(control, parallel, animation);
+                    WaitAnimation(control);
+                }
+
+                /// <summary>
+                /// It makes snapshot of the control before updating. It requires EndUpdate calling.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param>
+                /// <param name="clipRectangle">Clip rectangle for animation</param>
+                public void BeginUpdate(Control control, bool parallel = false, Animation animation = null, Rectangle clipRectangle = default(Rectangle))
+                {
+                    AddToQueue(control, AnimateMode.BeginUpdate, parallel, animation, clipRectangle);
+
+                    bool wait = false;
+                    do
+                    {
+                        wait = false;
+                        lock (queue)
+                            foreach (var item in queue)
+                                if (item.control == control && item.mode == AnimateMode.BeginUpdate)
+                                {
+                                    if (item.controller == null)
+                                        wait = true;
+                                }
+
+                        if (wait)
+                            Application.DoEvents();
+
+                    } while (wait);
+                }
+
+                /// <summary>
+                /// Upadates control view with animation. It requires to call BeginUpdate before.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                public void EndUpdate(Control control)
+                {
+                    lock (queue)
+                    {
+                        foreach (var item in queue)
+                            if (item.control == control && item.mode == AnimateMode.BeginUpdate)
+                            {
+                                item.controller.EndUpdate();
+                                item.mode = AnimateMode.Update;
+                            }
+                    }
+                }
+
+                /// <summary>
+                /// Upadates control view with animation and waits while animation will be completed. It requires to call BeginUpdate before.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                public void EndUpdateSync(Control control)
+                {
+                    EndUpdate(control);
+                    WaitAnimation(control);
+                }
+
+                /// <summary>
+                /// Waits while all animations will completed.
+                /// </summary>
+                public void WaitAllAnimations()
+                {
+                    while (!IsCompleted)
+                        Application.DoEvents();
+                }
+
+                /// <summary>
+                /// Waits while animation of the control will completed.
+                /// </summary>
+                /// <param name="animatedControl"></param>
+                public void WaitAnimation(Control animatedControl)
+                {
+                    while (true)
+                    {
+                        bool flag = false;
+                        lock (queue)
+                            foreach (var item in queue)
+                                if (item.control == animatedControl)
+                                {
+                                    flag = true;
+                                    break;
+                                }
+
+                        if (!flag)
+                            return;
+
+                        Application.DoEvents();
+                    }
+                }
+
+                List<QueueItem> requests = new List<QueueItem>();
+
+                void OnCompleted(QueueItem item)
+                {
+                    if (item.controller != null)
+                    {
+                        item.controller.Dispose();
+                    }
+                    lock (queue)
+                        queue.Remove(item);
+
+                    OnAnimationCompleted(new AnimationCompletedEventArg { Animation = item.animation, Control = item.control, Mode = item.mode });
+                }
+
+                /// <summary>
+                /// Adds the contol to animation queue.
+                /// </summary>
+                /// <param name="control">Target control</param>
+                /// <param name="mode">Animation mode</param>
+                /// <param name="parallel">Allows to animate it same time as other animations</param>
+                /// <param name="animation">Personal animation</param> 
+                public void AddToQueue(Control control, AnimateMode mode, bool parallel = true, Animation animation = null, Rectangle clipRectangle = default(Rectangle))
+                {
+                    if (animation == null)
+                        animation = DefaultAnimation;
+
+                    if (control is IFakeControl)
+                    {
+                        control.Visible = false;
+                        return;
+                    }
+
+                    var item = new QueueItem() { animation = animation, control = control, IsActive = parallel, mode = mode, clipRectangle = clipRectangle };
+
+                    //check visible state
+                    switch (mode)
+                    {
+                        case AnimateMode.Show:
+                            if (control.Visible)//already showed
+                            {
+                                OnCompleted(new QueueItem { control = control, mode = mode });
+                                return;
+                            }
+                            break;
+                        case AnimateMode.Hide:
+                            if (!control.Visible)//already hidden
+                            {
+                                OnCompleted(new QueueItem { control = control, mode = mode });
+                                return;
+                            }
+                            break;
+                    }
+
+                    //add to queue
+                    lock (queue)
+                        queue.Add(item);
+                    lock (requests)
+                        requests.Add(item);
+                }
+
+                private Controller CreateDoubleBitmap(Control control, AnimateMode mode, Animation animation, Rectangle clipRect)
+                {
+                    var controller = new Controller(control, mode, animation, TimeStep, clipRect);
+                    controller.TransfromNeeded += OnTransformNeeded;
+                    if (NonLinearTransfromNeeded != null)
+                        controller.NonLinearTransfromNeeded += OnNonLinearTransfromNeeded;
+                    controller.MouseDown += OnMouseDown;
+                    controller.DoubleBitmap.Cursor = Cursor;
+                    controller.FramePainted += OnFramePainted;
+                    return controller;
+                }
+
+                void OnFramePainted(object sender, PaintEventArgs e)
+                {
+                    if (FramePainted != null)
+                        FramePainted(sender, e);
+                }
+
+                protected virtual void OnMouseDown(object sender, MouseEventArgs e)
+                {
+                    try
+                    {
+                        //transform point to animated control's coordinates 
+                        var db = (Controller)sender;
+                        var l = e.Location;
+                        l.Offset(db.DoubleBitmap.Left - db.AnimatedControl.Left, db.DoubleBitmap.Top - db.AnimatedControl.Top);
+                        //
+                        if (MouseDown != null)
+                            MouseDown(sender, new MouseEventArgs(e.Button, e.Clicks, l.X, l.Y, e.Delta));
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                protected virtual void OnNonLinearTransfromNeeded(object sender, NonLinearTransfromNeededEventArg e)
+                {
+                    if (NonLinearTransfromNeeded != null)
+                        NonLinearTransfromNeeded(this, e);
+                    else
+                        e.UseDefaultTransform = true;
+                }
+
+                protected virtual void OnTransformNeeded(object sender, TransfromNeededEventArg e)
+                {
+                    if (TransfromNeeded != null)
+                        TransfromNeeded(this, e);
+                    else
+                        e.UseDefaultMatrix = true;
+                }
+
+                /// <summary>
+                /// Clears queue.
+                /// </summary>
+                public void ClearQueue()
+                {
+                    List<QueueItem> items = null;
+                    lock (queue)
+                    {
+                        items = new List<QueueItem>(queue);
+                        queue.Clear();
+                    }
+
+
+                    foreach (var item in items)
+                    {
+                        if (item.control != null)
+                            item.control.BeginInvoke(new MethodInvoker(() =>
+                            {
+                                switch (item.mode)
+                                {
+                                    case AnimateMode.Hide: item.control.Visible = false; break;
+                                    case AnimateMode.Show: item.control.Visible = true; break;
+                                }
+                            }));
+                        OnAnimationCompleted(new AnimationCompletedEventArg { Animation = item.animation, Control = item.control, Mode = item.mode });
+                    }
+
+                    if (items.Count > 0)
+                        OnAllAnimationsCompleted();
+                }
+
+                protected virtual void OnAnimationCompleted(AnimationCompletedEventArg e)
+                {
+                    if (AnimationCompleted != null)
+                        AnimationCompleted(this, e);
+                }
+
+                protected virtual void OnAllAnimationsCompleted()
+                {
+                    if (AllAnimationsCompleted != null)
+                        AllAnimationsCompleted(this, EventArgs.Empty);
+                }
+
+                #region Nested type: QueueItem
+
+                protected class QueueItem
+                {
+                    public Animation animation;
+                    public Controller controller;
+                    public Control control;
+                    public DateTime ActivateTime { get; private set; }
+                    public AnimateMode mode;
+                    public Rectangle clipRectangle;
+
+                    public bool isActive;
+                    public bool IsActive
+                    {
+                        get { return isActive; }
+                        set
+                        {
+                            if (isActive == value) return;
+                            isActive = value;
+                            if (value)
+                                ActivateTime = DateTime.Now;
+                        }
+                    }
+
+                    public override string ToString()
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        if (control != null)
+                            sb.Append(control.GetType().Name + " ");
+                        sb.Append(mode);
+                        return sb.ToString();
+                    }
+                }
+
+                #endregion
+
+                #region IExtenderProvider
+
+                public DecorationType GetDecoration(Control control)
+                {
+                    if (DecorationByControls.ContainsKey(control))
+                        return DecorationByControls[control].DecorationType;
+                    else
+                        return DecorationType.None;
+                }
+
+                public void SetDecoration(Control control, DecorationType decoration)
+                {
+                    var wrapper = DecorationByControls.ContainsKey(control) ? DecorationByControls[control] : null;
+                    if (decoration == DecorationType.None)
+                    {
+                        if (wrapper != null)
+                            wrapper.Dispose();
+                        DecorationByControls.Remove(control);
+                    }
+                    else
+                    {
+                        if (wrapper == null)
+                            wrapper = new DecorationControl(decoration, control);
+                        wrapper.DecorationType = decoration;
+                        DecorationByControls[control] = wrapper;
+                    }
+                }
+
+                private readonly Dictionary<Control, DecorationControl> DecorationByControls = new Dictionary<Control, DecorationControl>();
+
+                public bool CanExtend(object extendee)
+                {
+                    return extendee is Control;
+                }
+
+                #endregion
+            }
+
+            public enum DecorationType
+            {
+                None,
+                BottomMirror,
+                Custom
+            }
+
+
+            public class AnimationCompletedEventArg : EventArgs
+            {
+                public Animation Animation { get; set; }
+                public Control Control { get; internal set; }
+                public AnimateMode Mode { get; internal set; }
+            }
+
+            public class TransfromNeededEventArg : EventArgs
+            {
+                public TransfromNeededEventArg()
+                {
+                    Matrix = new Matrix(1, 0, 0, 1, 0, 0);
+                }
+
+                public Matrix Matrix { get; set; }
+                public float CurrentTime { get; internal set; }
+                public Rectangle ClientRectangle { get; internal set; }
+                public Rectangle ClipRectangle { get; internal set; }
+                public Animation Animation { get; set; }
+                public Control Control { get; internal set; }
+                public AnimateMode Mode { get; internal set; }
+                public bool UseDefaultMatrix { get; set; }
+            }
+
+            public class NonLinearTransfromNeededEventArg : EventArgs
+            {
+                public float CurrentTime { get; internal set; }
+
+                public Rectangle ClientRectangle { get; internal set; }
+                public byte[] Pixels { get; internal set; }
+                public int Stride { get; internal set; }
+
+                public Rectangle SourceClientRectangle { get; internal set; }
+                public byte[] SourcePixels { get; internal set; }
+                public int SourceStride { get; set; }
+
+                public Animation Animation { get; set; }
+                public Control Control { get; internal set; }
+                public AnimateMode Mode { get; internal set; }
+                public bool UseDefaultTransform { get; set; }
+            }
+
+
+            public enum AnimateMode
+            {
+                Show,
+                Hide,
+                Update,
+                BeginUpdate
+            }
+            public class Controller
+            {
+                protected Bitmap BgBmp { get { return (DoubleBitmap as IFakeControl).BgBmp; } set { (DoubleBitmap as IFakeControl).BgBmp = value; } }
+                public Bitmap Frame { get { return (DoubleBitmap as IFakeControl).Frame; } set { (DoubleBitmap as IFakeControl).Frame = value; } }
+                protected Bitmap ctrlBmp;
+                public float CurrentTime { get; private set; }
+                protected float TimeStep { get; private set; }
+
+                public event EventHandler<TransfromNeededEventArg> TransfromNeeded;
+                public event EventHandler<NonLinearTransfromNeededEventArg> NonLinearTransfromNeeded;
+                public event EventHandler<PaintEventArgs> FramePainting;
+                public event EventHandler<PaintEventArgs> FramePainted;
+                public event EventHandler<MouseEventArgs> MouseDown;
+
+                public Control DoubleBitmap { get; private set; }
+                public Control AnimatedControl { get; set; }
+                Point[] buffer;
+                byte[] pixelsBuffer;
+                protected Rectangle CustomClipRect;
+
+                AnimateMode mode;
+                Animation animation;
+
+                public void Dispose()
+                {
+                    if (ctrlBmp != null)
+                        BgBmp.Dispose();
+                    if (ctrlBmp != null)
+                        ctrlBmp.Dispose();
+                    if (Frame != null)
+                        Frame.Dispose();
+                    AnimatedControl = null;
+
+                    Hide();
+                }
+
+                public void Hide()
+                {
+                    if (DoubleBitmap != null)
+                        try
+                        {
+                            DoubleBitmap.BeginInvoke(new MethodInvoker(() =>
+                            {
+                                if (DoubleBitmap.Visible) DoubleBitmap.Hide();
+                                DoubleBitmap.Parent = null;
+                                //DoubleBitmap.Dispose();
+                            }));
+                        }
+                        catch { }
+                }
+
+                protected virtual Rectangle GetBounds()
+                {
+                    return new Rectangle(
+                        AnimatedControl.Left - animation.Padding.Left,
+                        AnimatedControl.Top - animation.Padding.Top,
+                        AnimatedControl.Size.Width + animation.Padding.Left + animation.Padding.Right,
+                        AnimatedControl.Size.Height + animation.Padding.Top + animation.Padding.Bottom);
+                }
+
+                protected virtual Rectangle ControlRectToMyRect(Rectangle rect)
+                {
+                    return new Rectangle(
+                        animation.Padding.Left + rect.Left,
+                        animation.Padding.Top + rect.Top,
+                        rect.Width + animation.Padding.Left + animation.Padding.Right,
+                        rect.Height + animation.Padding.Top + animation.Padding.Bottom);
+                }
+
+                public Controller(Control control, AnimateMode mode, Animation animation, float timeStep, Rectangle controlClipRect)
+                {
+                    if (control is Form)
+                        DoubleBitmap = new DoubleBitmapForm();
+                    else
+                        DoubleBitmap = new DoubleBitmapControl();
+
+                    (DoubleBitmap as IFakeControl).FramePainting += OnFramePainting;
+                    (DoubleBitmap as IFakeControl).FramePainted += OnFramePainting;
+                    (DoubleBitmap as IFakeControl).TransfromNeeded += OnTransfromNeeded;
+                    DoubleBitmap.MouseDown += OnMouseDown;
+
+                    this.animation = animation;
+                    this.AnimatedControl = control;
+                    this.mode = mode;
+
+                    this.CustomClipRect = controlClipRect;
+
+                    if (mode == AnimateMode.Show || mode == AnimateMode.BeginUpdate)
+                        timeStep = -timeStep;
+
+                    this.TimeStep = timeStep * (animation.TimeCoeff == 0f ? 1f : animation.TimeCoeff);
+                    if (this.TimeStep == 0f)
+                        timeStep = 0.01f;
+
+                    try
+                    {
+                        switch (mode)
+                        {
+                            case AnimateMode.Hide:
+                                {
+                                    BgBmp = GetBackground(control);
+                                    (DoubleBitmap as IFakeControl).InitParent(control, animation.Padding);
+                                    ctrlBmp = GetForeground(control);
+                                    DoubleBitmap.Visible = true;
+                                    control.Visible = false;
+                                }
+                                break;
+
+                            case AnimateMode.Show:
+                                {
+                                    BgBmp = GetBackground(control);
+                                    (DoubleBitmap as IFakeControl).InitParent(control, animation.Padding);
+                                    DoubleBitmap.Visible = true;
+                                    DoubleBitmap.Refresh();
+                                    control.Visible = true;
+                                    ctrlBmp = GetForeground(control);
+                                }
+                                break;
+
+                            case AnimateMode.BeginUpdate:
+                            case AnimateMode.Update:
+                                {
+                                    (DoubleBitmap as IFakeControl).InitParent(control, animation.Padding);
+                                    BgBmp = GetBackground(control, true);
+                                    DoubleBitmap.Visible = true;
+
+                                }
+                                break;
+                        }
+                    }
+                    catch
+                    {
+                        Dispose();
+                    }
+#if debug
+            BgBmp.Save("c:\\bgBmp.png");
+            if (ctrlBmp != null)
+                ctrlBmp.Save("c:\\ctrlBmp.png");
+#endif
+
+                    CurrentTime = timeStep > 0 ? animation.MinTime : animation.MaxTime;
+                }
+
+                protected virtual void OnMouseDown(object sender, MouseEventArgs e)
+                {
+                    if (MouseDown != null)
+                        MouseDown(this, e);
+                }
+
+                protected virtual void OnFramePainting(object sender, PaintEventArgs e)
+                {
+                    var oldFrame = Frame;
+                    Frame = null;
+
+                    if (mode == AnimateMode.BeginUpdate)
+                        return;
+
+                    Frame = OnNonLinearTransfromNeeded();
+
+                    if (oldFrame != Frame && oldFrame != null)
+                        oldFrame.Dispose();
+
+                    var time = CurrentTime + TimeStep;
+                    if (time > animation.MaxTime) time = animation.MaxTime;
+                    if (time < animation.MinTime) time = animation.MinTime;
+                    CurrentTime = time;
+
+                    if (FramePainting != null)
+                        FramePainting(this, e);
+                }
+
+                protected virtual void OnFramePainted(object sender, PaintEventArgs e)
+                {
+                    if (FramePainted != null)
+                        FramePainted(this, e);
+                }
+
+                protected virtual Bitmap GetBackground(Control ctrl, bool includeForeground = false, bool clip = false)
+                {
+                    if (ctrl is Form)
+                        return GetScreenBackground(ctrl, includeForeground, clip);
+
+                    var bounds = GetBounds();
+                    var w = bounds.Width;
+                    var h = bounds.Height;
+                    if (w == 0) w = 1;
+                    if (h == 1) h = 1;
+                    Bitmap bmp = new Bitmap(w, h);
+
+                    var clientRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                    PaintEventArgs ea = new PaintEventArgs(Graphics.FromImage(bmp), clientRect);
+                    if (clip)
+                    {
+                        if (CustomClipRect == default(Rectangle))
+                            ea.Graphics.SetClip(new Rectangle(0, 0, w, h));
+                        else
+                            ea.Graphics.SetClip(CustomClipRect);
+                    }
+
+                    for (int i = ctrl.Parent.Controls.Count - 1; i >= 0; i--)
+                    {
+                        var c = ctrl.Parent.Controls[i];
+                        if (c == ctrl && !includeForeground) break;
+                        if (c.Visible && !c.IsDisposed)
+                            if (c.Bounds.IntersectsWith(bounds))
+                            {
+                                using (Bitmap cb = new Bitmap(c.Width, c.Height))
+                                {
+                                    c.DrawToBitmap(cb, new Rectangle(0, 0, c.Width, c.Height));
+                                    /*if (c == ctrl)
+                                        ea.Graphics.SetClip(clipRect);*/
+                                    ea.Graphics.DrawImage(cb, c.Left - bounds.Left, c.Top - bounds.Top, c.Width, c.Height);
+                                }
+                            }
+                        if (c == ctrl) break;
+                    }
+
+                    ea.Graphics.Dispose();
+
+                    return bmp;
+                }
+
+
+                private Bitmap GetScreenBackground(Control ctrl, bool includeForeground, bool clip)
+                {
+                    var size = Screen.PrimaryScreen.Bounds.Size;
+                    Graphics temp = DoubleBitmap.CreateGraphics();//???
+                    var bmp = new Bitmap(size.Width, size.Height, temp);
+                    Graphics gr = Graphics.FromImage(bmp);
+                    gr.CopyFromScreen(0, 0, 0, 0, size);
+                    return bmp;
+                }
+
+                /*
+                private Bitmap GetScreenBackground(Control ctrl, bool includeForeground, bool clip)
+                {
+                    var size = GetBounds().Size;
+                    Graphics temp = FakeControl.CreateGraphics();//???
+                    var bmp = new Bitmap(size.Width, size.Height, temp);
+                    Graphics gr = Graphics.FromImage(bmp);
+                    var p = ctrl.Parent == null? ctrl.Location : ctrl.Parent.PointToScreen(ctrl.Location);
+                    gr.CopyFromScreen(p.X - animation.Padding.Left, p.Y - animation.Padding.Top, 0, 0, size);
+                    return bmp;
+                }*/
+
+                protected virtual Bitmap GetForeground(Control ctrl)
+                {
+                    Bitmap bmp = null;
+
+                    if (!ctrl.IsDisposed)
+                    {
+                        if (ctrl.Parent == null)
+                        {
+                            bmp = new Bitmap(ctrl.Width + animation.Padding.Horizontal, ctrl.Height + animation.Padding.Vertical);
+                            ctrl.DrawToBitmap(bmp, new Rectangle(animation.Padding.Left, animation.Padding.Top, ctrl.Width, ctrl.Height));
+                        }
+                        else
+                        {
+                            bmp = new Bitmap(DoubleBitmap.Width, DoubleBitmap.Height);
+                            ctrl.DrawToBitmap(bmp, new Rectangle(ctrl.Left - DoubleBitmap.Left, ctrl.Top - DoubleBitmap.Top, ctrl.Width, ctrl.Height));
+#if debug
+            using (var gr = Graphics.FromImage(bmp))
+                gr.DrawLine(Pens.Red, 0, 0, DoubleBitmap.Width, DoubleBitmap.Height);
+#endif
+                        }
+                    }
+
+
+                    return bmp;
+                }
+
+                protected virtual void OnTransfromNeeded(object sender, TransfromNeededEventArg e)
+                {
+                    try
+                    {
+                        if (CustomClipRect != default(Rectangle))
+                            e.ClipRectangle = ControlRectToMyRect(CustomClipRect);
+
+                        e.CurrentTime = CurrentTime;
+
+                        if (TransfromNeeded != null)
+                            TransfromNeeded(this, e);
+                        else
+                            e.UseDefaultMatrix = true;
+
+                        if (e.UseDefaultMatrix)
+                        {
+                            TransfromHelper.DoScale(e, animation);
+                            TransfromHelper.DoRotate(e, animation);
+                            TransfromHelper.DoSlide(e, animation);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                protected virtual Bitmap OnNonLinearTransfromNeeded()
+                {
+                    Bitmap bmp = null;
+                    if (ctrlBmp == null)
+                        return null;
+
+                    if (NonLinearTransfromNeeded == null)
+                        if (!animation.IsNonLinearTransformNeeded)
+                            return ctrlBmp;
+
+                    try
+                    {
+                        bmp = (Bitmap)ctrlBmp.Clone();
+
+                        const int bytesPerPixel = 4;
+                        PixelFormat pxf = PixelFormat.Format32bppArgb;
+                        Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                        BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadWrite, pxf);
+                        IntPtr ptr = bmpData.Scan0;
+                        int numBytes = bmp.Width * bmp.Height * bytesPerPixel;
+                        byte[] argbValues = new byte[numBytes];
+
+                        System.Runtime.InteropServices.Marshal.Copy(ptr, argbValues, 0, numBytes);
+
+                        var e = new NonLinearTransfromNeededEventArg() { CurrentTime = CurrentTime, ClientRectangle = DoubleBitmap.ClientRectangle, Pixels = argbValues, Stride = bmpData.Stride };
+
+                        if (NonLinearTransfromNeeded != null)
+                            NonLinearTransfromNeeded(this, e);
+                        else
+                            e.UseDefaultTransform = true;
+
+                        if (e.UseDefaultTransform)
+                        {
+                            TransfromHelper.DoBlind(e, animation);
+                            TransfromHelper.DoMosaic(e, animation, ref buffer, ref pixelsBuffer);
+
+                            TransfromHelper.DoTransparent(e, animation);
+                            TransfromHelper.DoLeaf(e, animation);
+                        }
+
+                        System.Runtime.InteropServices.Marshal.Copy(argbValues, 0, ptr, numBytes);
+                        bmp.UnlockBits(bmpData);
+                    }
+                    catch
+                    {
+                    }
+
+                    return bmp;
+                }
+
+                public void EndUpdate()
+                {
+                    var bmp = GetBackground(AnimatedControl, true, true);
+#if debug
+            bmp.Save("c:\\bmp.png");
+#endif
+                    if (animation.AnimateOnlyDifferences)
+                        TransfromHelper.CalcDifference(bmp, BgBmp);
+
+                    ctrlBmp = bmp;
+                    mode = AnimateMode.Update;
+#if debug
+            ctrlBmp.Save("c:\\ctrlBmp.png");
+#endif
+                }
+
+                public bool IsCompleted
+                {
+                    get { return (TimeStep >= 0f && CurrentTime >= animation.MaxTime) || (TimeStep <= 0f && CurrentTime <= animation.MinTime); }
+                }
+
+                internal void BuildNextFrame()
+                {
+                    if (mode == AnimateMode.BeginUpdate)
+                        return;
+                    DoubleBitmap.Invalidate();
+                }
+            }
+            class DecorationControl : UserControl
+            {
+                public DecorationType DecorationType { get; set; }
+                public Control DecoratedControl { get; set; }
+                public Padding Padding { get; set; }
+                public Bitmap CtrlBmp { get; set; }
+                public byte[] CtrlPixels { get; set; }
+                public int CtrlStride { get; set; }
+                public Bitmap Frame { get; set; }
+                public float CurrentTime { get; set; }
+                Timer tm;
+
+                public DecorationControl(DecorationType type, Control decoratedControl)
+                {
+                    this.DecorationType = type;
+                    this.DecoratedControl = decoratedControl;
+
+                    decoratedControl.VisibleChanged += new EventHandler(control_VisibleChanged);
+                    decoratedControl.ParentChanged += new EventHandler(control_VisibleChanged);
+                    decoratedControl.LocationChanged += new EventHandler(control_VisibleChanged);
+
+                    decoratedControl.Paint += new PaintEventHandler(decoratedControl_Paint);
+
+                    SetStyle(ControlStyles.Selectable, false);
+                    SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+
+                    //BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+                    InitPadding();
+
+                    tm = new System.Windows.Forms.Timer();
+                    tm.Interval = 100;
+                    tm.Tick += new EventHandler(tm_Tick);
+                    tm.Enabled = true;
+                }
+
+                private void InitPadding()
+                {
+                    switch (DecorationType)
+                    {
+                        case CSWinAnimator.DecorationType.BottomMirror:
+                            Padding = new Padding(0, 0, 0, 20);
+                            break;
+                    }
+                }
+
+                void tm_Tick(object sender, EventArgs e)
+                {
+                    switch (DecorationType)
+                    {
+                        case CSWinAnimator.DecorationType.BottomMirror:
+                        case CSWinAnimator.DecorationType.Custom:
+                            Invalidate();
+                            break;
+                    }
+                }
+
+                void decoratedControl_Paint(object sender, PaintEventArgs e)
+                {
+                    if (!isSnapshotNow)
+                    {
+                        /*
+                        if (Frame != null)
+                        {
+                            e.Graphics.DrawImage(Frame, new Point(-Padding.Left, -Padding.Top));
+                            wasDraw = true;
+                        }*/
+                        /*
+                        CtrlBmp = GetForeground(DecoratedControl);
+                        CtrlPixels = GetPixels(CtrlBmp);*/ /*does not work for TextBox*/
+                        //wasRepainted = true;
+                        Invalidate();
+                    }
+                }
+
+                protected override void OnPaint(PaintEventArgs e)
+                {
+                    CtrlBmp = GetForeground(DecoratedControl);
+                    CtrlPixels = GetPixels(CtrlBmp);
+
+                    if (Frame != null)
+                        Frame.Dispose();
+                    Frame = OnNonLinearTransfromNeeded();
+
+                    if (Frame != null)
+                    {
+                        e.Graphics.DrawImage(Frame, Point.Empty);
+                    }
+                }
+
+                void control_VisibleChanged(object sender, EventArgs e)
+                {
+                    Init();
+                }
+
+                private void Init()
+                {
+                    this.Parent = DecoratedControl.Parent;
+                    this.Visible = DecoratedControl.Visible;
+                    this.Location = new Point(DecoratedControl.Left - Padding.Left, DecoratedControl.Top - Padding.Top);
+
+
+                    if (Parent != null)
+                    {
+                        var i = Parent.Controls.GetChildIndex(DecoratedControl);
+                        Parent.Controls.SetChildIndex(this, i + 1);
+                    }
+
+                    var newSize = new Size(DecoratedControl.Width + Padding.Left + Padding.Right, DecoratedControl.Height + Padding.Top + Padding.Bottom);
+                    if (newSize != Size)
+                    {
+                        this.Size = newSize;
+                    }
+                }
+
+                bool isSnapshotNow = false;
+
+                protected virtual Bitmap GetForeground(Control ctrl)
+                {
+                    Bitmap bmp = new Bitmap(this.Width, this.Height);
+
+                    if (!ctrl.IsDisposed)
+                    {
+                        isSnapshotNow = true;
+                        ctrl.DrawToBitmap(bmp, new Rectangle(Padding.Left, Padding.Top, ctrl.Width, ctrl.Height));
+                        isSnapshotNow = false;
+                    }
+                    return bmp;
+                }
+
+                byte[] GetPixels(Bitmap bmp)
+                {
+                    const int bytesPerPixel = 4;
+                    PixelFormat pxf = PixelFormat.Format32bppArgb;
+                    Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                    BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, pxf);
+                    IntPtr ptr = bmpData.Scan0;
+                    int numBytes = bmp.Width * bmp.Height * bytesPerPixel;
+                    byte[] argbValues = new byte[numBytes];
+                    Marshal.Copy(ptr, argbValues, 0, numBytes);
+                    //Marshal.Copy(argbValues, 0, ptr, numBytes);
+                    bmp.UnlockBits(bmpData);
+                    return argbValues;
+                }
+
+                public event EventHandler<NonLinearTransfromNeededEventArg> NonLinearTransfromNeeded;
+
+                protected virtual Bitmap OnNonLinearTransfromNeeded()
+                {
+                    Bitmap bmp = null;
+                    if (CtrlBmp == null)
+                        return null;
+
+                    try
+                    {
+                        bmp = new Bitmap(Width, Height);
+
+                        const int bytesPerPixel = 4;
+                        PixelFormat pxf = PixelFormat.Format32bppArgb;
+                        Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                        BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadWrite, pxf);
+                        IntPtr ptr = bmpData.Scan0;
+                        int numBytes = bmp.Width * bmp.Height * bytesPerPixel;
+                        byte[] argbValues = new byte[numBytes];
+
+                        Marshal.Copy(ptr, argbValues, 0, numBytes);
+
+                        var e = new NonLinearTransfromNeededEventArg() { CurrentTime = CurrentTime, ClientRectangle = ClientRectangle, Pixels = argbValues, Stride = bmpData.Stride, SourcePixels = CtrlPixels, SourceClientRectangle = new Rectangle(Padding.Left, Padding.Top, DecoratedControl.Width, DecoratedControl.Height), SourceStride = CtrlStride };
+
+                        try
+                        {
+                            if (NonLinearTransfromNeeded != null)
+                                NonLinearTransfromNeeded(this, e);
+                            else
+                                e.UseDefaultTransform = true;
+
+                            if (e.UseDefaultTransform)
+                            {
+                                switch (DecorationType)
+                                {
+                                    case DecorationType.BottomMirror: TransfromHelper.DoBottomMirror(e); break;
+                                }
+                            }
+                        }
+                        catch { }
+
+                        Marshal.Copy(argbValues, 0, ptr, numBytes);
+                        bmp.UnlockBits(bmpData);
+                    }
+                    catch
+                    {
+                    }
+
+                    return bmp;
+                }
+
+                protected override void Dispose(bool disposing)
+                {
+                    tm.Stop();
+                    tm.Dispose();
+                    base.Dispose(disposing);
+                }
+            }
+            public partial class DoubleBitmapControl : Control, IFakeControl
+            {
+                Bitmap bgBmp;
+                Bitmap frame;
+
+                Bitmap IFakeControl.BgBmp { get { return this.bgBmp; } set { this.bgBmp = value; } }
+                Bitmap IFakeControl.Frame { get { return this.frame; } set { this.frame = value; } }
+                public event EventHandler<TransfromNeededEventArg> TransfromNeeded;
+                public event EventHandler<PaintEventArgs> FramePainted;
+                public event EventHandler<PaintEventArgs> FramePainting;
+
+                private System.ComponentModel.IContainer components = null;
+                public DoubleBitmapControl()
+                {
+                    InitializeComponent();
+
+                    Visible = false;
+                    SetStyle(ControlStyles.Selectable, false);
+                    SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+                }
+
+                protected override void Dispose(bool disposing)
+                {
+                    if (disposing && (components != null))
+                    {
+                        components.Dispose();
+                    }
+                    base.Dispose(disposing);
+                }
+                private void InitializeComponent()
+                {
+                    components = new System.ComponentModel.Container();
+                }
+
+                protected override void OnPaint(PaintEventArgs e)
+                {
+                    var gr = e.Graphics;
+
+                    OnFramePainting(e);
+
+                    try
+                    {
+                        gr.DrawImage(bgBmp, 0, 0);
+                        if (frame != null)
+                        {
+                            var ea = new TransfromNeededEventArg() { ClientRectangle = new Rectangle(0, 0, this.Width, this.Height) };
+                            ea.ClipRectangle = ea.ClientRectangle;
+                            OnTransfromNeeded(ea);
+                            gr.SetClip(ea.ClipRectangle);
+                            gr.Transform = ea.Matrix;
+                            gr.DrawImage(frame, 0, 0);
+                        }
+                    }
+                    catch { }
+
+                    //e.Graphics.DrawLine(Pens.Red, Point.Empty, new Point(Width, Height));
+
+                    OnFramePainted(e);
+                }
+
+                private void OnTransfromNeeded(TransfromNeededEventArg ea)
+                {
+                    if (TransfromNeeded != null)
+                        TransfromNeeded(this, ea);
+                }
+
+                protected virtual void OnFramePainting(PaintEventArgs e)
+                {
+                    if (FramePainting != null)
+                        FramePainting(this, e);
+                }
+
+                protected virtual void OnFramePainted(PaintEventArgs e)
+                {
+                    if (FramePainted != null)
+                        FramePainted(this, e);
+                }
+
+
+                public void InitParent(Control control, Padding padding)
+                {
+                    Parent = control.Parent;
+                    var i = control.Parent.Controls.GetChildIndex(control);
+                    control.Parent.Controls.SetChildIndex(this, i);
+                    Bounds = new Rectangle(
+                        control.Left - padding.Left,
+                        control.Top - padding.Top,
+                        control.Size.Width + padding.Left + padding.Right,
+                        control.Size.Height + padding.Top + padding.Bottom);
+                }
+            }
+
+            public interface IFakeControl
+            {
+                Bitmap BgBmp { get; set; }
+                Bitmap Frame { get; set; }
+                event EventHandler<TransfromNeededEventArg> TransfromNeeded;
+                event EventHandler<PaintEventArgs> FramePainting;
+                event EventHandler<PaintEventArgs> FramePainted;
+                void InitParent(Control animatedControl, Padding padding);
+            }
+            public partial class DoubleBitmapForm : Form, IFakeControl
+            {
+                Bitmap bgBmp;
+                Bitmap frame;
+
+                public event EventHandler<TransfromNeededEventArg> TransfromNeeded;
+
+                public DoubleBitmapForm()
+                {
+                    InitializeComponent();
+                    Visible = false;
+                    SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+                    TopMost = true;
+                    FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+                    WindowState = FormWindowState.Maximized;
+                    //ShowInTaskbar = false;
+                }
+                private System.ComponentModel.IContainer components = null;
+
+                /// <summary>
+                /// Clean up any resources being used.
+                /// </summary>
+                /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+                protected override void Dispose(bool disposing)
+                {
+                    if (disposing && (components != null))
+                    {
+                        components.Dispose();
+                    }
+                    base.Dispose(disposing);
+                }
+
+                #region Windows Form Designer generated code
+
+                /// <summary>
+                /// Required method for Designer support - do not modify
+                /// the contents of this method with the code editor.
+                /// </summary>
+                private void InitializeComponent()
+                {
+                    this.SuspendLayout();
+                    // 
+                    // DoubleBitmapForm
+                    // 
+                    this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+                    this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+                    this.ClientSize = new System.Drawing.Size(284, 262);
+                    this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+                    this.Name = "DoubleBitmapForm";
+                    this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+                    this.Text = "DoubleBitmapForm";
+                    this.ResumeLayout(false);
+
+                }
+
+                #endregion
+                protected override CreateParams CreateParams
+                {
+                    get
+                    {
+                        CreateParams cp = base.CreateParams;
+                        unchecked
+                        {
+                            cp.Style = (int)Flags.WindowStyles.WS_POPUP;
+                        }
+                        ;// (int)Flags.WindowStyles.WS_CHILD;
+                        cp.ExStyle |= (int)Flags.WindowStyles.WS_EX_NOACTIVATE | (int)Flags.WindowStyles.WS_EX_TOOLWINDOW;
+                        cp.X = this.Location.X;
+                        cp.Y = this.Location.Y;
+                        return cp;
+                    }
+                }
+
+                protected override void OnPaint(PaintEventArgs e)
+                {
+                    var gr = e.Graphics;
+
+                    OnFramePainting(e);
+
+                    try
+                    {
+                        gr.DrawImage(bgBmp, -Location.X, -Location.Y);
+                        /*
+                        if (frame == null)
+                        {
+                            control.Focus();
+                            if (control.Focused)
+                            {
+                                frame = new Bitmap(control.Width, control.Height);
+                                //control.DrawToBitmap(frame, new Rectangle(padding.Left, padding.Top, control.Width, control.Height));
+                                control.DrawToBitmap(frame, new Rectangle(0, 0, control.Width, control.Height));
+                            }
+                        }*/
+
+                        if (frame != null)
+                        {
+                            //var ea = new TransfromNeededEventArg(){ ClientRectangle = new Rectangle(0, 0, this.Width, this.Height) };
+                            var ea = new TransfromNeededEventArg();
+                            ea.ClientRectangle = ea.ClipRectangle = new Rectangle(control.Bounds.Left - padding.Left, control.Bounds.Top - padding.Top, control.Bounds.Width + padding.Horizontal, control.Bounds.Height + padding.Vertical);
+                            OnTransfromNeeded(ea);
+                            gr.SetClip(ea.ClipRectangle);
+                            gr.Transform = ea.Matrix;
+                            //var p = new Point();
+                            var p = control.Location;
+                            //gr.Transform.Translate(p.X, p.Y);
+                            gr.DrawImage(frame, p.X - padding.Left, p.Y - padding.Top);
+                        }
+
+                        OnFramePainted(e);
+                    }
+                    catch { }
+
+                    //e.Graphics.DrawLine(Pens.Red, Point.Empty, new Point(Width, Height));
+                }
+
+                private void OnTransfromNeeded(TransfromNeededEventArg ea)
+                {
+                    if (TransfromNeeded != null)
+                        TransfromNeeded(this, ea);
+                }
+
+                protected virtual void OnFramePainting(PaintEventArgs e)
+                {
+                    if (FramePainting != null)
+                        FramePainting(this, e);
+                }
+
+
+                protected virtual void OnFramePainted(PaintEventArgs e)
+                {
+                    if (FramePainted != null)
+                        FramePainted(this, e);
+                }
+
+                Padding padding;
+                Control control;
+
+                public void InitParent(Control control, Padding padding)
+                {
+                    //Size = new Size(control.Size.Width + padding.Left + padding.Right, control.Size.Height + padding.Top + padding.Bottom);
+                    //var p = control.Parent == null ? control.Location : control.Parent.PointToScreen(control.Location);
+                    //Location = new Point(p.X - padding.Left, p.Y - padding.Top);
+
+                    this.control = control;
+                    /*
+                    if (padding.Left < 10) padding.Left = 15;
+                    if (padding.Right < 10) padding.Right = 15;
+                    if (padding.Top < 10) padding.Top = 15;
+                    if (padding.Bottom < 10) padding.Bottom = 15;*/
+
+                    Location = new Point(0, 0);
+                    Size = Screen.PrimaryScreen.Bounds.Size;
+                    control.VisibleChanged += new EventHandler(control_VisibleChanged);
+                    this.padding = padding;
+                }
+
+                Point controlLocation;
+
+                void control_VisibleChanged(object sender, EventArgs e)
+                {
+                    controlLocation = (sender as Control).Location;
+                    var s = (sender as Control).Size;
+
+                    //this.Location = new Point(p.X - padding.Left, p.Y - padding.Top);
+                    //this.Location = Point.Empty;
+                    //this.Size = new Size(s.Width + padding.Left + padding.Right, s.Height + padding.Top + padding.Bottom);
+                }
+
+                public Bitmap BgBmp
+                {
+                    get
+                    {
+                        return bgBmp;
+                    }
+                    set
+                    {
+                        bgBmp = value;
+                    }
+                }
+
+                public Bitmap Frame
+                {
+                    get
+                    {
+                        return frame;
+                    }
+                    set
+                    {
+                        frame = value;
+                    }
+                }
+
+                public event EventHandler<PaintEventArgs> FramePainting;
+
+                public event EventHandler<PaintEventArgs> FramePainted;
+            }
+            public static class Flags
+            {
+                [Flags]
+                public enum WindowStyles : uint
+                {
+                    WS_OVERLAPPED = 0x00000000,
+                    WS_POPUP = 0x80000000,
+                    WS_CHILD = 0x40000000,
+                    WS_MINIMIZE = 0x20000000,
+                    WS_VISIBLE = 0x10000000,
+                    WS_DISABLED = 0x08000000,
+                    WS_CLIPSIBLINGS = 0x04000000,
+                    WS_CLIPCHILDREN = 0x02000000,
+                    WS_MAXIMIZE = 0x01000000,
+                    WS_BORDER = 0x00800000,
+                    WS_DLGFRAME = 0x00400000,
+                    WS_VSCROLL = 0x00200000,
+                    WS_HSCROLL = 0x00100000,
+                    WS_SYSMENU = 0x00080000,
+                    WS_THICKFRAME = 0x00040000,
+                    WS_GROUP = 0x00020000,
+                    WS_TABSTOP = 0x00010000,
+
+                    WS_MINIMIZEBOX = 0x00020000,
+                    WS_MAXIMIZEBOX = 0x00010000,
+
+                    WS_CAPTION = WS_BORDER | WS_DLGFRAME,
+                    WS_TILED = WS_OVERLAPPED,
+                    WS_ICONIC = WS_MINIMIZE,
+                    WS_SIZEBOX = WS_THICKFRAME,
+                    WS_TILEDWINDOW = WS_OVERLAPPEDWINDOW,
+
+                    WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+                    WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU,
+                    WS_CHILDWINDOW = WS_CHILD,
+
+                    //Extended Window Styles
+
+                    WS_EX_DLGMODALFRAME = 0x00000001,
+                    WS_EX_NOPARENTNOTIFY = 0x00000004,
+                    WS_EX_TOPMOST = 0x00000008,
+                    WS_EX_ACCEPTFILES = 0x00000010,
+                    WS_EX_TRANSPARENT = 0x00000020,
+
+                    //#if(WINVER >= 0x0400)
+
+                    WS_EX_MDICHILD = 0x00000040,
+                    WS_EX_TOOLWINDOW = 0x00000080,
+                    WS_EX_WINDOWEDGE = 0x00000100,
+                    WS_EX_CLIENTEDGE = 0x00000200,
+                    WS_EX_CONTEXTHELP = 0x00000400,
+
+                    WS_EX_RIGHT = 0x00001000,
+                    WS_EX_LEFT = 0x00000000,
+                    WS_EX_RTLREADING = 0x00002000,
+                    WS_EX_LTRREADING = 0x00000000,
+                    WS_EX_LEFTSCROLLBAR = 0x00004000,
+                    WS_EX_RIGHTSCROLLBAR = 0x00000000,
+
+                    WS_EX_CONTROLPARENT = 0x00010000,
+                    WS_EX_STATICEDGE = 0x00020000,
+                    WS_EX_APPWINDOW = 0x00040000,
+
+                    WS_EX_OVERLAPPEDWINDOW = (WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE),
+                    WS_EX_PALETTEWINDOW = (WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST),
+
+                    //#endif /* WINVER >= 0x0400 */
+
+                    //#if(WIN32WINNT >= 0x0500)
+
+                    WS_EX_LAYERED = 0x00080000,
+
+                    //#endif /* WIN32WINNT >= 0x0500 */
+
+                    //#if(WINVER >= 0x0500)
+
+                    WS_EX_NOINHERITLAYOUT = 0x00100000, // Disable inheritence of mirroring by children
+                    WS_EX_LAYOUTRTL = 0x00400000, // Right to left mirroring
+
+                    //#endif /* WINVER >= 0x0500 */
+
+                    //#if(WIN32WINNT >= 0x0500)
+
+                    WS_EX_COMPOSITED = 0x02000000,
+                    WS_EX_NOACTIVATE = 0x08000000
+
+                    //#endif /* WIN32WINNT >= 0x0500 */
+
+                }
+            }
+            public class PointFConverter : ExpandableObjectConverter
+            {
+                /// <summary>
+                /// Creates a new instance of PointFConverter
+                /// </summary>
+                public PointFConverter()
+                {
+                }
+
+                /// <summary>
+                /// Boolean, true if the source type is a string
+                /// </summary>
+                public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+                {
+                    if (sourceType == typeof(string)) return true;
+                    return base.CanConvertFrom(context, sourceType);
+                }
+
+                /// <summary>
+                /// Converts the specified string into a PointF
+                /// </summary>
+                public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+                {
+                    if (value is string)
+                    {
+                        try
+                        {
+                            string s = (string)value;
+                            string[] converterParts = s.Split(',');
+                            float x = 0;
+                            float y = 0;
+                            if (converterParts.Length > 1)
+                            {
+                                x = float.Parse(converterParts[0].Trim().Trim('{', 'X', 'x', '='));
+                                y = float.Parse(converterParts[1].Trim().Trim('}', 'Y', 'y', '='));
+                            }
+                            else if (converterParts.Length == 1)
+                            {
+                                x = float.Parse(converterParts[0].Trim());
+                                y = 0;
+                            }
+                            else
+                            {
+                                x = 0F;
+                                y = 0F;
+                            }
+                            return new PointF(x, y);
+                        }
+                        catch
+                        {
+                            throw new ArgumentException("Cannot convert [" + value.ToString() + "] to pointF");
+                        }
+                    }
+                    return base.ConvertFrom(context, culture, value);
+                }
+
+                /// <summary>
+                /// Converts the PointF into a string
+                /// </summary>
+                public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
+                {
+                    if (destinationType == typeof(string))
+                    {
+                        if (value.GetType() == typeof(PointF))
+                        {
+                            PointF pt = (PointF)value;
+                            return string.Format("{{X={0}, Y={1}}}", pt.X, pt.Y);
+                        }
+                    }
+                    return base.ConvertTo(context, culture, value, destinationType);
+                }
+            }
+            public static class TransfromHelper
+            {
+                const int bytesPerPixel = 4;
+                static Random rnd = new Random();
+
+                public static void DoScale(TransfromNeededEventArg e, Animation animation)
+                {
+                    var rect = e.ClientRectangle;
+                    var center = new PointF(rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
+                    e.Matrix.Translate(center.X, center.Y);
+                    var kx = 1f - animation.ScaleCoeff.X * e.CurrentTime;
+                    var ky = 1f - animation.ScaleCoeff.X * e.CurrentTime;
+                    if (Math.Abs(kx) <= 0.001f) kx = 0.001f;
+                    if (Math.Abs(ky) <= 0.001f) ky = 0.001f;
+                    e.Matrix.Scale(kx, ky);
+                    e.Matrix.Translate(-center.X, -center.Y);
+                }
+
+                public static void DoSlide(TransfromNeededEventArg e, Animation animation)
+                {
+                    var k = e.CurrentTime;
+                    e.Matrix.Translate(-e.ClientRectangle.Width * k * animation.SlideCoeff.X, -e.ClientRectangle.Height * k * animation.SlideCoeff.Y);
+                }
+
+                public static void DoBlind(NonLinearTransfromNeededEventArg e, Animation animation)
+                {
+                    if (animation.BlindCoeff == PointF.Empty)
+                        return;
+
+                    var pixels = e.Pixels;
+                    var sx = e.ClientRectangle.Width;
+                    var sy = e.ClientRectangle.Height;
+                    var s = e.Stride;
+                    var kx = animation.BlindCoeff.X;
+                    var ky = animation.BlindCoeff.Y;
+                    var a = (int)((sx * kx + sy * ky) * (1 - e.CurrentTime));
+
+                    for (int x = 0; x < sx; x++)
+                        for (int y = 0; y < sy; y++)
+                        {
+                            int i = y * s + x * bytesPerPixel;
+                            var d = x * kx + y * ky - a;
+                            if (d >= 0)
+                                pixels[i + 3] = (byte)0;
+                        }
+                }
+
+                public static void DoMosaic(NonLinearTransfromNeededEventArg e, Animation animation, ref Point[] buffer, ref byte[] pixelsBuffer)
+                {
+                    if (animation.MosaicCoeff == PointF.Empty || animation.MosaicSize == 0)
+                        return;
+
+                    var pixels = e.Pixels;
+                    var sx = e.ClientRectangle.Width;
+                    var sy = e.ClientRectangle.Height;
+                    var s = e.Stride;
+                    var a = e.CurrentTime;
+                    var count = pixels.Length;
+                    var opacity = 1 - e.CurrentTime;
+                    if (opacity < 0f) opacity = 0f;
+                    if (opacity > 1f) opacity = 1f;
+                    var mkx = animation.MosaicCoeff.X;
+                    var mky = animation.MosaicCoeff.Y;
+
+                    if (buffer == null)
+                    {
+                        buffer = new Point[pixels.Length];
+                        for (int i = 0; i < pixels.Length; i++)
+                            buffer[i] = new Point((int)(mkx * (rnd.NextDouble() - 0.5)), (int)(mky * (rnd.NextDouble() - 0.5)));
+                    }
+
+                    if (pixelsBuffer == null)
+                        pixelsBuffer = (byte[])pixels.Clone();
+
+
+                    for (int i = 0; i < count; i += bytesPerPixel)
+                    {
+                        pixels[i + 0] = 255;
+                        pixels[i + 1] = 255;
+                        pixels[i + 2] = 255;
+                        pixels[i + 3] = 0;
+                    }
+
+                    var ms = animation.MosaicSize;
+                    var msx = animation.MosaicShift.X;
+                    var msy = animation.MosaicShift.Y;
+
+                    for (int y = 0; y < sy; y++)
+                        for (int x = 0; x < sx; x++)
+                        {
+                            int yi = (y / ms);
+                            int xi = (x / ms);
+                            int i = y * s + x * bytesPerPixel;
+                            int j = yi * s + xi * bytesPerPixel;
+
+                            var newX = x + (int)(a * (buffer[j].X + xi * msx));
+                            var newY = y + (int)(a * (buffer[j].Y + yi * msy));
+
+                            if (newX >= 0 && newX < sx)
+                                if (newY >= 0 && newY < sy)
+                                {
+                                    int newI = newY * s + newX * bytesPerPixel;
+                                    pixels[newI + 0] = pixelsBuffer[i + 0];
+                                    pixels[newI + 1] = pixelsBuffer[i + 1];
+                                    pixels[newI + 2] = pixelsBuffer[i + 2];
+                                    pixels[newI + 3] = (byte)(pixelsBuffer[i + 3] * opacity);
+                                }
+                        }
+                }
+
+
+                public static void DoLeaf(NonLinearTransfromNeededEventArg e, Animation animation)
+                {
+                    if (animation.LeafCoeff == 0f)
+                        return;
+
+                    var pixels = e.Pixels;
+                    var sx = e.ClientRectangle.Width;
+                    var sy = e.ClientRectangle.Height;
+                    var s = e.Stride;
+                    var a = (int)((sx + sy) * (1 - e.CurrentTime * e.CurrentTime));
+
+                    var count = pixels.Length;
+
+                    for (int x = 0; x < sx; x++)
+                        for (int y = 0; y < sy; y++)
+                        {
+                            int i = y * s + x * bytesPerPixel;
+                            if (x + y >= a)
+                            {
+                                var newX = a - y;
+                                var newY = a - x;
+                                var d = a - x - y;
+                                if (d < -20)
+                                    d = -20;
+
+                                int newI = newY * s + newX * bytesPerPixel;
+                                if (newX >= 0 && newY >= 0)
+                                    if (newI >= 0 && newI < count)
+                                        if (pixels[i + 3] > 0)
+                                        {
+                                            pixels[newI + 0] = (byte)Math.Min(255, d + 250 + pixels[i + 0] / 10);
+                                            pixels[newI + 1] = (byte)Math.Min(255, d + 250 + pixels[i + 1] / 10);
+                                            pixels[newI + 2] = (byte)Math.Min(255, d + 250 + pixels[i + 2] / 10);
+                                            pixels[newI + 3] = 230;
+                                        }
+                                pixels[i + 3] = (byte)(0);
+                            }
+                        }
+                }
+
+                public static void DoTransparent(NonLinearTransfromNeededEventArg e, Animation animation)
+                {
+                    if (animation.TransparencyCoeff == 0f)
+                        return;
+                    var opacity = 1f - animation.TransparencyCoeff * e.CurrentTime;
+                    if (opacity < 0f)
+                        opacity = 0f;
+                    if (opacity > 1f)
+                        opacity = 1f;
+
+                    var pixels = e.Pixels;
+                    for (int counter = 0; counter < pixels.Length; counter += bytesPerPixel)
+                        pixels[counter + 3] = (byte)(pixels[counter + 3] * opacity);
+                }
+
+                public static void CalcDifference(Bitmap bmp1, Bitmap bmp2)
+                {
+                    PixelFormat pxf = PixelFormat.Format32bppArgb;
+                    Rectangle rect = new Rectangle(0, 0, bmp1.Width, bmp1.Height);
+
+                    BitmapData bmpData1 = bmp1.LockBits(rect, ImageLockMode.ReadWrite, pxf);
+                    IntPtr ptr1 = bmpData1.Scan0;
+
+                    BitmapData bmpData2 = bmp2.LockBits(rect, ImageLockMode.ReadOnly, pxf);
+                    IntPtr ptr2 = bmpData2.Scan0;
+
+                    int numBytes = bmp1.Width * bmp1.Height * bytesPerPixel;
+                    byte[] pixels1 = new byte[numBytes];
+                    byte[] pixels2 = new byte[numBytes];
+
+                    System.Runtime.InteropServices.Marshal.Copy(ptr1, pixels1, 0, numBytes);
+                    System.Runtime.InteropServices.Marshal.Copy(ptr2, pixels2, 0, numBytes);
+
+                    for (int i = 0; i < numBytes; i += bytesPerPixel)
+                    {
+                        if (pixels1[i + 0] == pixels2[i + 0] &&
+                            pixels1[i + 1] == pixels2[i + 1] &&
+                            pixels1[i + 2] == pixels2[i + 2])
+                        {
+                            pixels1[i + 0] = 255;
+                            pixels1[i + 1] = 255;
+                            pixels1[i + 2] = 255;
+                            pixels1[i + 3] = 0;
+                        }
+                    }
+
+                    System.Runtime.InteropServices.Marshal.Copy(pixels1, 0, ptr1, numBytes);
+                    bmp1.UnlockBits(bmpData1);
+                    bmp2.UnlockBits(bmpData2);
+                }
+
+                public static void DoRotate(TransfromNeededEventArg e, Animation animation)
+                {
+                    var rect = e.ClientRectangle;
+                    var center = new PointF(rect.Left + rect.Width / 2, rect.Top + rect.Height / 2);
+
+                    e.Matrix.Translate(center.X, center.Y);
+                    if (e.CurrentTime > animation.RotateLimit)
+                        e.Matrix.Rotate(360 * (e.CurrentTime - animation.RotateLimit) * animation.RotateCoeff);
+                    e.Matrix.Translate(-center.X, -center.Y);
+                }
+
+                public static void DoBottomMirror(NonLinearTransfromNeededEventArg e)
+                {
+                    var source = e.SourcePixels;
+                    var output = e.Pixels;
+
+                    var s = e.Stride;
+                    var dy = 1;
+                    var beginY = e.SourceClientRectangle.Bottom + dy;
+                    var sy = e.ClientRectangle.Height;
+                    var beginX = e.SourceClientRectangle.Left;
+                    var endX = e.SourceClientRectangle.Right;
+                    var d = sy - beginY;
+
+                    for (int x = beginX; x < endX; x++)
+                        for (int y = beginY; y < sy; y++)
+                        {
+                            var sourceY = (int)(beginY - 1 - dy - (y - beginY));
+                            if (sourceY < 0)
+                                break;
+                            var sourceX = x;
+                            int sourceI = sourceY * s + sourceX * bytesPerPixel;
+                            int outI = y * s + x * bytesPerPixel;
+                            output[outI + 0] = source[sourceI + 0];
+                            output[outI + 1] = source[sourceI + 1];
+                            output[outI + 2] = source[sourceI + 2];
+                            output[outI + 3] = (byte)((1 - 1f * (y - beginY) / d) * 90);
+                        }
+                }
+
+                /*
+                internal static void DoBottomShadow(NonLinearTransfromNeededEventArg e)
+                {
+                    var source = e.SourcePixels;
+                    var output = e.Pixels;
+
+                    var s = e.Stride;
+                    var dy = 1;
+                    var beginY = e.SourceClientRectangle.Bottom + dy;
+                    var sy = e.ClientRectangle.Height;
+                    var beginX = e.SourceClientRectangle.Left;
+                    var endX = e.SourceClientRectangle.Right;
+                    var d = sy - beginY;
+
+                    var bgG = source[0];
+                    var bgB = source[1];
+                    var bgR = source[2];
+
+                    for (int x = beginX; x < endX; x++)
+                        for (int y = beginY; y < sy; y++)
+                        {
+                            var sourceY = (int)(beginY - 1 - dy - (y - beginY)*6);
+                            if (sourceY < 0)
+                                break;
+                            var sourceX = x;
+                            int sourceI = sourceY * s + sourceX * bytesPerPixel;
+                            int outI = y * s + x * bytesPerPixel;
+                            if (source[sourceI + 0] != bgG && source[sourceI + 1] != bgB && source[sourceI + 2] != bgR)
+                            {
+                                output[outI + 0] = 0;
+                                output[outI + 1] = 0;
+                                output[outI + 2] = 0;
+                                output[outI + 3] = (byte) ((1 - 1f*(y - beginY)/d)*90);
+                            }
+                        }
+                }*/
+
+                public static void DoBlur(NonLinearTransfromNeededEventArg e, int r)
+                {
+                    var output = e.Pixels;
+                    var source = e.SourcePixels;
+
+                    var s = e.Stride;
+                    var sy = e.ClientRectangle.Height;
+                    var sx = e.ClientRectangle.Width;
+                    var maxI = source.Length - bytesPerPixel;
+
+                    for (int x = r; x < sx - r; x++)
+                        for (int y = r; y < sy - r; y++)
+                        {
+                            int outI = y * s + x * bytesPerPixel;
+
+                            int R = 0, G = 0, B = 0, A = 0;
+                            int counter = 0;
+                            for (int xx = x - r; xx < x + r; xx++)
+                                for (int yy = y - r; yy < y + r; yy++)
+                                {
+                                    int srcI = yy * s + xx * bytesPerPixel;
+                                    if (srcI >= 0 && srcI < maxI)
+                                        if (source[srcI + 3] > 0)
+                                        {
+                                            B += source[srcI + 0];
+                                            G += source[srcI + 1];
+                                            R += source[srcI + 2];
+                                            A += source[srcI + 3];
+                                            counter++;
+                                        }
+                                }
+                            if (outI < maxI && counter > 5)
+                            {
+                                output[outI + 0] = (byte)(B / counter);
+                                output[outI + 1] = (byte)(G / counter);
+                                output[outI + 2] = (byte)(R / counter);
+                                output[outI + 3] = (byte)(A / counter);
+                                //output[outI + 3] = 255; //(byte)((1 - 1f * (y - beginY) / d) * 90);
+                            }
+                        }
+                }
+            }
+        }
         namespace Keyboard
         {
             public sealed class KeyboardHook : IDisposable
