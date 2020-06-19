@@ -1,5 +1,8 @@
 ﻿using CSharpExtendedCommands.Data.SimpleJSON;
+using CSharpExtendedCommands.DataTypeExtensions;
+using CSharpExtendedCommands.DataTypeExtensions.Converters;
 using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
+using CSharpExtendedCommands.Info;
 using Microsoft.CSharp;
 using System;
 using System.CodeDom.Compiler;
@@ -11,6 +14,8 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.IO.Ports;
@@ -30,14 +35,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
-using Timer = System.Windows.Forms.Timer;
 using static CSharpExtendedCommands.Converter;
-using CSharpExtendedCommands.DataTypeExtensions.Converters;
-using CSharpExtendedCommands.DataTypeExtensions;
-using CSharpExtendedCommands.Info;
-using System.Security.Policy;
-using System.Data.SqlTypes;
-using System.Web.SessionState;
+using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
@@ -13742,7 +13741,7 @@ namespace CSharpExtendedCommands
             public static bool operator !=(BinaryByte left, string right) => left.ToString() != right;
             public static bool operator ==(string left, BinaryByte right) => left == right.ToString();
             public static bool operator !=(string left, BinaryByte right) => left != right.ToString();
-            public static implicit operator int(BinaryByte b)=>Convert.ToInt32(b.ToString().Replace(" ", ""), 2);
+            public static implicit operator int(BinaryByte b) => Convert.ToInt32(b.ToString().Replace(" ", ""), 2);
             public static implicit operator string(BinaryByte b) => b.ToString();
             public static implicit operator bool(BinaryByte b) => b > 0;
             public static implicit operator BinaryByte(string v)
@@ -13769,7 +13768,7 @@ namespace CSharpExtendedCommands
                 if (data.Length < 8)
                     return new byte[] { Convert.ToByte((int)v) };
                 if (data.Length % 8 != 0)
-                    data = data.PadLeft((data.Length / 8 + 1 )*2, '0');
+                    data = data.PadLeft((data.Length / 8 + 1) * 2, '0');
                 List<byte> bytes = new List<byte>();
                 for (int i = 0; i < data.Length; i++)
                     bytes.Add(Convert.ToByte(Convert.ToInt32(data.Substring(i, 8), 2)));
@@ -13801,7 +13800,7 @@ namespace CSharpExtendedCommands
             {
                 string r = "";
                 for (int i = 0; i < _binData.Length; i += 4)
-                    r += " " +_binData.Substring(i, 4);
+                    r += " " + _binData.Substring(i, 4);
                 return r.Substring(1);
             }
         }
