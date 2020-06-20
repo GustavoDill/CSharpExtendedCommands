@@ -40,20 +40,6 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    //namespace UI.Graphics
-    //{
-    //    public static partial class ManipulateObject
-    //    {
-    //        public static void CenterFormInScreen(Form frm)
-    //        {
-    //            int frmW = frm.Size.Width;
-    //            int frmH = frm.Size.Height;
-    //            int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth() / 2;
-    //            int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight() / 2;
-    //            frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
-    //        }
-    //    }
-    //}
     //namespace Info
     //{
     //    public static partial class ComputerInfo
@@ -78,16 +64,6 @@ namespace CSharpExtendedCommands
     //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
     //            return computerInfo.Info.InstalledUICulture;
     //        }
-    //        public static string OsPlatform()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSPlatform;
-    //        }
-    //        public static string OsVersion()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSVersion;
-    //        }
     //        public static ulong GetTotalPhysicalMemory()
     //        {
     //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
@@ -98,36 +74,27 @@ namespace CSharpExtendedCommands
     //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
     //            return computerInfo.Info.TotalVirtualMemory;
     //        }
-    //        public static int ScreenWidth()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Screen.Bounds.Width;
-    //        }
-    //        public static int ScreenHeight()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return int.Parse(computerInfo.Screen.Bounds.Height.ToString());
-    //        }
+
     //    }
     //}
-    //namespace IO
-    //{
-    //    public static class FileSystem
-    //    {
-    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-    //        {
-    //            var shell = new IWshRuntimeLibrary.WshShell();
-    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-    //            shortcut.TargetPath = ExePath;
-    //            if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-    //            shortcut.Save();
-    //        }
-    //    }
-    //}
+    namespace IO
+    {
+        public static class FileSystem
+        {
+            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+            {
+                var shell = new IWshRuntimeLibrary.WshShell();
+                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+                shortcut.TargetPath = ExePath;
+                if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+                shortcut.Save();
+            }
+        }
+    }
     namespace Web
     {
         namespace HtmlAgilityPack
@@ -13298,6 +13265,14 @@ namespace CSharpExtendedCommands
         {
             public static class UIClassExtensions
             {
+                public static void CenterInScreen(this Form frm)
+                {
+                    int frmW = frm.Size.Width;
+                    int frmH = frm.Size.Height;
+                    int csW = CSharpExtendedCommands.Info.ComputerInfo.ScreenWidth / 2;
+                    int csH = CSharpExtendedCommands.Info.ComputerInfo.ScreenHeight / 2;
+                    frm.Location = new Point(csW - frmW / 2, csH - frmH / 2);
+                }
                 public static void ChangeBGColorSmoothly(this Control control, Color color, int delay = 1)
                 {
                     int a = control.BackColor.A;
@@ -18708,7 +18683,7 @@ namespace CSharpExtendedCommands
                     Bitmap bmp = new Bitmap(w, h);
 
                     var clientRect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                    PaintEventArgs ea = new PaintEventArgs(Graphics.FromImage(bmp), clientRect);
+                    PaintEventArgs ea = new PaintEventArgs(System.Drawing.Graphics.FromImage(bmp), clientRect);
                     if (clip)
                     {
                         if (CustomClipRect == default(Rectangle))
@@ -18744,9 +18719,9 @@ namespace CSharpExtendedCommands
                 private Bitmap GetScreenBackground(Control ctrl, bool includeForeground, bool clip)
                 {
                     var size = Screen.PrimaryScreen.Bounds.Size;
-                    Graphics temp = DoubleBitmap.CreateGraphics();//???
+                    System.Drawing.Graphics temp = DoubleBitmap.CreateGraphics();//???
                     var bmp = new Bitmap(size.Width, size.Height, temp);
-                    Graphics gr = Graphics.FromImage(bmp);
+                    System.Drawing.Graphics gr = System.Drawing.Graphics.FromImage(bmp);
                     gr.CopyFromScreen(0, 0, 0, 0, size);
                     return bmp;
                 }
@@ -25499,6 +25474,49 @@ namespace CSharpExtendedCommands
         }
         public static partial class ComputerInfo
         {
+            public static PlatformID OSPlatform
+            {
+                get => Environment.OSVersion.Platform;
+            }
+            public static Version OSVersion
+            {
+                get => Environment.OSVersion.Version;
+            }
+            public static Rectangle PrimaryScreenBounds
+            {
+                get => Screen.PrimaryScreen.Bounds;
+            }
+            public static int ScreenWidth
+            {
+                get => PrimaryScreenBounds.Size.Width;
+            }
+            public static int ScreenHeight
+            {
+                get => PrimaryScreenBounds.Size.Width;
+            }
+            public static Image TakeScreenshot(Rectangle dimensions)
+            {
+                Bitmap bmp = new Bitmap(dimensions.Width, dimensions.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                Graphics graph = Graphics.FromImage(bmp);
+                graph.CopyFromScreen(dimensions.X, dimensions.Y, 0, 0, dimensions.Size, CopyPixelOperation.SourceCopy);
+                return bmp;
+            }
+            public static Image TakeScreenshot(int x, int y, Size size)
+            {
+                return TakeScreenshot(new Point(x, y), size);
+            }
+            public static Image TakeScreenshot(int x, int y, int width, int height)
+            {
+                return TakeScreenshot(new Rectangle(x, y, width, height));
+            }
+            public static Image TakeScreenshot(Point location, int width, int height)
+            {
+                return TakeScreenshot(location, new Size(width, height));
+            }
+            public static Image TakeScreenshot(Point location, Size size)
+            {
+                return TakeScreenshot(new Rectangle(location, size));
+            }
             public static Image Screenshot
             {
                 get
