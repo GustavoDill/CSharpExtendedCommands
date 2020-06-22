@@ -77,24 +77,24 @@ namespace CSharpExtendedCommands
 
     //    }
     //}
-    namespace IO
-    {
-        public static class FileSystem
-        {
-            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-            {
-                var shell = new IWshRuntimeLibrary.WshShell();
-                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-                shortcut.TargetPath = ExePath;
-                if (!string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-                shortcut.Save();
-            }
-        }
-    }
+    //namespace IO
+    //{
+    //    public static class FileSystem
+    //    {
+    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+    //        {
+    //            var shell = new IWshRuntimeLibrary.WshShell();
+    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+    //            shortcut.TargetPath = ExePath;
+    //            if (string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+    //            shortcut.Save();
+    //        }
+    //    }
+    //}
     namespace Web
     {
         namespace HtmlAgilityPack
