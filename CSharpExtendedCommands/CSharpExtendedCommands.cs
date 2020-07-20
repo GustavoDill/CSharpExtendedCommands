@@ -41,107 +41,107 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-    namespace Data
-    {
-        public class ZipExplorer : IDisposable
-        {
-            bool doneIndexing1 = false;
-            bool doneIndexing2 = false;
-            public bool IndexingComplete { get => doneIndexing1 && doneIndexing2; }
-            private void Index()
-            {
-                var i = 0;
-                var i2 = Archive.Entries.Count / 2;
-                new Thread(() =>
-                {
-                    for (; i < i2; i++)
-                    {
-                        if (Archive.Entries[i].FullName.EndsWith("/"))
-                            directories.Add(Archive.Entries[i]);
-                        else
-                            files.Add(Archive.Entries[i]);
-                    }
-                    doneIndexing2 = true;
-                }).Start();
-                new Thread(() =>
-                {
-                    for (int j = i2; j < Archive.Entries.Count; j++)
-                    {
-                        if (Archive.Entries[j].FullName.EndsWith("/"))
-                            directories.Add(Archive.Entries[j]);
-                        else
-                            files.Add(Archive.Entries[j]);
-                    }
-                    doneIndexing1 = true;
-                }).Start();
-            }
-            public Icon GetIcon(ZipArchiveEntry e)
-            {
-                if (e.FullName.EndsWith("/"))
-                    return null;
-                var s = e.Open();
-                var icon = new Icon(s);
-                s.Close();
-                return icon;
-            }
-            List<ZipArchiveEntry> files = new List<ZipArchiveEntry>();
-            List<ZipArchiveEntry> directories = new List<ZipArchiveEntry>();
-            public ZipArchiveEntry this[string path]
-            {
-                get
-                {
-                    ZipArchiveEntry entry = null;
-                    bool t1F = false;
-#pragma warning disable CS0219 // False warning - Variable is assigned but its value is never used
-                    bool t2F = false;
-#pragma warning restore CS0219 // Variable is assigned but its value is never used
-                    new Thread(() =>
-                    {
-                        for (int i = 0; i < Archive.Entries.Count / 2; i++)
-                        {
-                            if (entry != null)
-                                break;
-                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
-                            {
-                                entry = Archive.Entries[i];
-                                break;
-                            }
-                        }
-                        t1F = true;
-                    }).Start();
-                    new Thread(() =>
-                    {
-                        for (int i = Archive.Entries.Count / 2; i < Archive.Entries.Count; i++)
-                        {
-                            if (entry != null)
-                                break;
-                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
-                            {
-                                entry = Archive.Entries[i];
-                                break;
-                            }
-                        }
-                        t2F = true;
-                    }).Start();
-                    while (entry == null && (!t1F || !t1F))
-                    { Thread.Sleep(10); }
-                    return entry;
-                }
-            }
+//    namespace Data
+//    {
+//        public class ZipExplorer : IDisposable
+//        {
+//            bool doneIndexing1 = false;
+//            bool doneIndexing2 = false;
+//            public bool IndexingComplete { get => doneIndexing1 && doneIndexing2; }
+//            private void Index()
+//            {
+//                var i = 0;
+//                var i2 = Archive.Entries.Count / 2;
+//                new Thread(() =>
+//                {
+//                    for (; i < i2; i++)
+//                    {
+//                        if (Archive.Entries[i].FullName.EndsWith("/"))
+//                            directories.Add(Archive.Entries[i]);
+//                        else
+//                            files.Add(Archive.Entries[i]);
+//                    }
+//                    doneIndexing2 = true;
+//                }).Start();
+//                new Thread(() =>
+//                {
+//                    for (int j = i2; j < Archive.Entries.Count; j++)
+//                    {
+//                        if (Archive.Entries[j].FullName.EndsWith("/"))
+//                            directories.Add(Archive.Entries[j]);
+//                        else
+//                            files.Add(Archive.Entries[j]);
+//                    }
+//                    doneIndexing1 = true;
+//                }).Start();
+//            }
+//            public Icon GetIcon(ZipArchiveEntry e)
+//            {
+//                if (e.FullName.EndsWith("/"))
+//                    return null;
+//                var s = e.Open();
+//                var icon = new Icon(s);
+//                s.Close();
+//                return icon;
+//            }
+//            List<ZipArchiveEntry> files = new List<ZipArchiveEntry>();
+//            List<ZipArchiveEntry> directories = new List<ZipArchiveEntry>();
+//            public ZipArchiveEntry this[string path]
+//            {
+//                get
+//                {
+//                    ZipArchiveEntry entry = null;
+//                    bool t1F = false;
+//#pragma warning disable CS0219 // False warning - Variable is assigned but its value is never used
+//                    bool t2F = false;
+//#pragma warning restore CS0219 // Variable is assigned but its value is never used
+//                    new Thread(() =>
+//                    {
+//                        for (int i = 0; i < Archive.Entries.Count / 2; i++)
+//                        {
+//                            if (entry != null)
+//                                break;
+//                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+//                            {
+//                                entry = Archive.Entries[i];
+//                                break;
+//                            }
+//                        }
+//                        t1F = true;
+//                    }).Start();
+//                    new Thread(() =>
+//                    {
+//                        for (int i = Archive.Entries.Count / 2; i < Archive.Entries.Count; i++)
+//                        {
+//                            if (entry != null)
+//                                break;
+//                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+//                            {
+//                                entry = Archive.Entries[i];
+//                                break;
+//                            }
+//                        }
+//                        t2F = true;
+//                    }).Start();
+//                    while (entry == null && (!t1F || !t1F))
+//                    { Thread.Sleep(10); }
+//                    return entry;
+//                }
+//            }
 
-            public void Dispose()
-            {
-                Archive.Dispose();
-            }
+//            public void Dispose()
+//            {
+//                Archive.Dispose();
+//            }
 
-            public ZipExplorer(ZipArchive archive)
-            {
-                Archive = archive;
-                new Thread(Index).Start();
-            }
-            public ZipArchive Archive { get; }
-        }
-    }
+//            public ZipExplorer(ZipArchive archive)
+//            {
+//                Archive = archive;
+//                new Thread(Index).Start();
+//            }
+//            public ZipArchive Archive { get; }
+//        }
+//    }
     //namespace Info
     //{
     //    public static partial class ComputerInfo
@@ -20581,7 +20581,7 @@ namespace CSharpExtendedCommands
         [DefaultEvent("DownloadFinished")]
         public class DownloaderProgressBar : Component
         {
-            public DownloaderProgressBar(ProgressBar bar) { Bar = bar; }
+            public DownloaderProgressBar() { }
             public bool AutoUpdateProgressBar { get; set; } = true;
             public ProgressBar Bar { get; set; }
             public event AsyncCompletedEventHandler DownloadFinished;
