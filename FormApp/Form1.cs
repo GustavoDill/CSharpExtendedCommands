@@ -122,11 +122,8 @@ namespace FormApp
         Form m = new Main();
         private void button6_Click(object sender, EventArgs e)
         {
-            m.FormClosed += M_FormClosed;
-            cl.FormClosed += Cl_FormClosed;
-            m.Show();
-            cl.Show();
-            Hide();
+            ZipExplorer explorer = new ZipExplorer(new System.IO.Compression.ZipArchive(System.IO.File.Open("Launcher.zip", System.IO.FileMode.OpenOrCreate)));
+
         }
 
         private void M_FormClosed(object sender, FormClosedEventArgs e)

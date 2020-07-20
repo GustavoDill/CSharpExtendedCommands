@@ -18,6 +18,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
@@ -40,6 +41,107 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
+    namespace Data
+    {
+        public class ZipExplorer : IDisposable
+        {
+            bool doneIndexing1 = false;
+            bool doneIndexing2 = false;
+            public bool IndexingComplete { get => doneIndexing1 && doneIndexing2; }
+            private void Index()
+            {
+                var i = 0;
+                var i2 = Archive.Entries.Count / 2;
+                new Thread(() =>
+                {
+                    for (; i < i2; i++)
+                    {
+                        if (Archive.Entries[i].FullName.EndsWith("/"))
+                            directories.Add(Archive.Entries[i]);
+                        else
+                            files.Add(Archive.Entries[i]);
+                    }
+                    doneIndexing2 = true;
+                }).Start();
+                new Thread(() =>
+                {
+                    for (int j = i2; j < Archive.Entries.Count; j++)
+                    {
+                        if (Archive.Entries[j].FullName.EndsWith("/"))
+                            directories.Add(Archive.Entries[j]);
+                        else
+                            files.Add(Archive.Entries[j]);
+                    }
+                    doneIndexing1 = true;
+                }).Start();
+            }
+            public Icon GetIcon(ZipArchiveEntry e)
+            {
+                if (e.FullName.EndsWith("/"))
+                    return null;
+                var s = e.Open();
+                var icon = new Icon(s);
+                s.Close();
+                return icon;
+            }
+            List<ZipArchiveEntry> files = new List<ZipArchiveEntry>();
+            List<ZipArchiveEntry> directories = new List<ZipArchiveEntry>();
+            public ZipArchiveEntry this[string path]
+            {
+                get
+                {
+                    ZipArchiveEntry entry = null;
+                    bool t1F = false;
+#pragma warning disable CS0219 // False warning - Variable is assigned but its value is never used
+                    bool t2F = false;
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
+                    new Thread(() =>
+                    {
+                        for (int i = 0; i < Archive.Entries.Count / 2; i++)
+                        {
+                            if (entry != null)
+                                break;
+                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+                            {
+                                entry = Archive.Entries[i];
+                                break;
+                            }
+                        }
+                        t1F = true;
+                    }).Start();
+                    new Thread(() =>
+                    {
+                        for (int i = Archive.Entries.Count / 2; i < Archive.Entries.Count; i++)
+                        {
+                            if (entry != null)
+                                break;
+                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+                            {
+                                entry = Archive.Entries[i];
+                                break;
+                            }
+                        }
+                        t2F = true;
+                    }).Start();
+                    while (entry == null && (!t1F || !t1F))
+                    { Thread.Sleep(10); }
+                    return entry;
+                }
+            }
+
+            public void Dispose()
+            {
+                Archive.Dispose();
+            }
+
+            public ZipExplorer(ZipArchive archive)
+            {
+                Archive = archive;
+                new Thread(Index).Start();
+            }
+            public ZipArchive Archive { get; }
+        }
+    }
     //namespace Info
     //{
     //    public static partial class ComputerInfo
@@ -11268,7 +11370,7 @@ namespace CSharpExtendedCommands
                 #region Properties
                 public int Port { get; set; } = 54782;
                 [Browsable(false), CompilerGenerated]
-                public bool Enabled { get; private set; }
+                public new bool Enabled { get; private set; }
                 [Browsable(false)]
                 public Socket ClientConnectionSocket { get => client.Client; }
                 #endregion
@@ -11395,7 +11497,9 @@ namespace CSharpExtendedCommands
                 }
                 public void Initialize()
                 {
+#pragma warning disable CS0618 // Type or member is obsolete - Supressing just for simplicity
                     listener = new TcpListener(Port);
+#pragma warning restore CS0618 // Type or member is obsolete
                     ClientUpdater = new Thread(OnClientUpdate);
                     binaryFormatter = new BinaryFormatter();
                 }
@@ -13666,78 +13770,78 @@ namespace CSharpExtendedCommands
     }
     namespace DataTypes
     {
-        public class BinaryByte
+        public class BinaryData
         {
             string _binData;
-            public BinaryByte(byte b)
+            public BinaryData(byte b)
             {
                 _binData = IntToBinary(b);
                 ProcessData();
             }
-            public BinaryByte(string text)
+            public BinaryData(string text)
             {
                 _binData = TextToBinary(text);
                 ProcessData();
             }
-            internal BinaryByte(string binary, bool directConvert)
+            internal BinaryData(string binary, bool directConvert)
             {
                 _binData = binary;
                 ProcessData();
             }
-            public static BinaryByte FromBinary(string binary)
+            public static BinaryData FromBinary(string binary)
             {
-                return new BinaryByte(binary, true);
+                return new BinaryData(binary, true);
             }
-            public static bool operator ==(BinaryByte left, BinaryByte right) => left.ToString() == right.ToString();
-            public static bool operator !=(BinaryByte left, BinaryByte right) => left.ToString() != right.ToString();
-            public static bool operator >(BinaryByte left, BinaryByte right) => (int)left > right;
-            public static bool operator <(BinaryByte left, BinaryByte right) => (int)left < right;
-            public static bool operator >=(BinaryByte left, BinaryByte right) => (int)left >= right;
-            public static bool operator <=(BinaryByte left, BinaryByte right) => (int)left <= right;
-            public static bool operator ==(int left, BinaryByte right) => left == (int)right;
-            public static bool operator !=(int left, BinaryByte right) => left != (int)right;
-            public static bool operator >(int left, BinaryByte right) => left > (int)right;
-            public static bool operator <(int left, BinaryByte right) => left < (int)right;
-            public static bool operator <=(int left, BinaryByte right) => left <= (int)right;
-            public static bool operator >=(int left, BinaryByte right) => left >= (int)right;
-            public static bool operator ==(BinaryByte left, int right) => (int)left == right;
-            public static bool operator !=(BinaryByte left, int right) => (int)left != right;
-            public static bool operator >(BinaryByte left, int right) => (int)left > right;
-            public static bool operator <(BinaryByte left, int right) => (int)left < right;
-            public static bool operator <=(BinaryByte left, int right) => (int)left <= right;
-            public static bool operator >=(BinaryByte left, int right) => (int)left >= right;
-            public static bool operator >(BinaryByte left, string right) => left > new BinaryByte(TextToBinary(right));
-            public static bool operator >(string left, BinaryByte right) => new BinaryByte(TextToBinary(left)) > right;
-            public static bool operator <(BinaryByte left, string right) => left < new BinaryByte(TextToBinary(right));
-            public static bool operator <(string left, BinaryByte right) => new BinaryByte(TextToBinary(left)) < right;
-            public static bool operator >=(BinaryByte left, string right) => left >= new BinaryByte(TextToBinary(right));
-            public static bool operator <=(BinaryByte left, string right) => left <= new BinaryByte(TextToBinary(right));
-            public static bool operator ==(BinaryByte left, string right) => left.ToString() == right;
-            public static bool operator !=(BinaryByte left, string right) => left.ToString() != right;
-            public static bool operator ==(string left, BinaryByte right) => left == right.ToString();
-            public static bool operator !=(string left, BinaryByte right) => left != right.ToString();
-            public static implicit operator int(BinaryByte b) => Convert.ToInt32(b.ToString().Replace(" ", ""), 2);
-            public static implicit operator string(BinaryByte b) => b.ToString();
-            public static implicit operator bool(BinaryByte b) => b > 0;
-            public static implicit operator BinaryByte(string v)
+            public static bool operator ==(BinaryData left, BinaryData right) => left.ToString() == right.ToString();
+            public static bool operator !=(BinaryData left, BinaryData right) => left.ToString() != right.ToString();
+            public static bool operator >(BinaryData left, BinaryData right) => (int)left > right;
+            public static bool operator <(BinaryData left, BinaryData right) => (int)left < right;
+            public static bool operator >=(BinaryData left, BinaryData right) => (int)left >= right;
+            public static bool operator <=(BinaryData left, BinaryData right) => (int)left <= right;
+            public static bool operator ==(int left, BinaryData right) => left == (int)right;
+            public static bool operator !=(int left, BinaryData right) => left != (int)right;
+            public static bool operator >(int left, BinaryData right) => left > (int)right;
+            public static bool operator <(int left, BinaryData right) => left < (int)right;
+            public static bool operator <=(int left, BinaryData right) => left <= (int)right;
+            public static bool operator >=(int left, BinaryData right) => left >= (int)right;
+            public static bool operator ==(BinaryData left, int right) => (int)left == right;
+            public static bool operator !=(BinaryData left, int right) => (int)left != right;
+            public static bool operator >(BinaryData left, int right) => (int)left > right;
+            public static bool operator <(BinaryData left, int right) => (int)left < right;
+            public static bool operator <=(BinaryData left, int right) => (int)left <= right;
+            public static bool operator >=(BinaryData left, int right) => (int)left >= right;
+            public static bool operator >(BinaryData left, string right) => left > new BinaryData(TextToBinary(right));
+            public static bool operator >(string left, BinaryData right) => new BinaryData(TextToBinary(left)) > right;
+            public static bool operator <(BinaryData left, string right) => left < new BinaryData(TextToBinary(right));
+            public static bool operator <(string left, BinaryData right) => new BinaryData(TextToBinary(left)) < right;
+            public static bool operator >=(BinaryData left, string right) => left >= new BinaryData(TextToBinary(right));
+            public static bool operator <=(BinaryData left, string right) => left <= new BinaryData(TextToBinary(right));
+            public static bool operator ==(BinaryData left, string right) => left.ToString() == right;
+            public static bool operator !=(BinaryData left, string right) => left.ToString() != right;
+            public static bool operator ==(string left, BinaryData right) => left == right.ToString();
+            public static bool operator !=(string left, BinaryData right) => left != right.ToString();
+            public static implicit operator int(BinaryData b) => Convert.ToInt32(b.ToString().Replace(" ", ""), 2);
+            public static implicit operator string(BinaryData b) => b.ToString();
+            public static implicit operator bool(BinaryData b) => b > 0;
+            public static implicit operator BinaryData(string v)
             {
-                return new BinaryByte(v);
+                return new BinaryData(v);
             }
-            public static implicit operator BinaryByte(int v)
+            public static implicit operator BinaryData(int v)
             {
-                return new BinaryByte(v);
+                return new BinaryData(v);
             }
-            public static implicit operator BinaryByte(bool v)
+            public static implicit operator BinaryData(bool v)
             {
                 if (v)
-                    return new BinaryByte(1);
-                else return new BinaryByte(0);
+                    return new BinaryData(1);
+                else return new BinaryData(0);
             }
-            public static implicit operator BinaryByte(byte b)
+            public static implicit operator BinaryData(byte b)
             {
-                return new BinaryByte(b);
+                return new BinaryData(b);
             }
-            public static implicit operator byte[](BinaryByte v)
+            public static implicit operator byte[](BinaryData v)
             {
                 var data = v.ToString().Replace(" ", "");
                 if (data.Length < 8)
@@ -13749,14 +13853,14 @@ namespace CSharpExtendedCommands
                     bytes.Add(Convert.ToByte(Convert.ToInt32(data.Substring(i, 8), 2)));
                 return bytes.ToArray();
             }
-            public static implicit operator sbyte[](BinaryByte v)
+            public static implicit operator sbyte[](BinaryData v)
             {
                 List<sbyte> sbytes = new List<sbyte>();
                 foreach (var bit in v.ToString().Split(' '))
                     sbytes.Add(Convert.ToSByte(Convert.ToInt16(bit, 2)));
                 return sbytes.ToArray();
             }
-            public BinaryByte(int number)
+            public BinaryData(int number)
             {
                 _binData = Convert.ToString(number, 2);
                 ProcessData();
@@ -13777,6 +13881,16 @@ namespace CSharpExtendedCommands
                 for (int i = 0; i < _binData.Length; i += 4)
                     r += " " + _binData.Substring(i, 4);
                 return r.Substring(1);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is BinaryData data &&
+                       _binData == data._binData;
+            }
+            public override int GetHashCode()
+            {
+                return _binData.GetHashCode();
             }
         }
     }
@@ -13804,7 +13918,7 @@ namespace CSharpExtendedCommands
         }
         public class CommandProcessor
         {
-            private static string ParseAspas(ref string thing)
+            private static string ParseQuotes(ref string thing)
             {
                 var t = thing;
                 t = t.Substring(1);
@@ -13815,7 +13929,7 @@ namespace CSharpExtendedCommands
                     thing = thing.Substring(t.Length + 3);
                 return t;
             }
-            private static string ParseNormal(ref string thing)
+            private static string ParseNoQuotes(ref string thing)
             {
                 var t = thing.Split(' ')[0];
                 if (thing.Contains(" "))
@@ -13831,9 +13945,9 @@ namespace CSharpExtendedCommands
                 while (a != "")
                 {
                     if (a.Substring(0, 1) == "\"")
-                        cmds.Add(ParseAspas(ref a));
+                        cmds.Add(ParseQuotes(ref a));
                     else
-                        cmds.Add(ParseNormal(ref a));
+                        cmds.Add(ParseNoQuotes(ref a));
                 }
                 return cmds.ToArray();
             }
@@ -18872,7 +18986,7 @@ namespace CSharpExtendedCommands
             {
                 public DecorationType DecorationType { get; set; }
                 public Control DecoratedControl { get; set; }
-                public Padding Padding { get; set; }
+                public new Padding Padding { get; set; }
                 public Bitmap CtrlBmp { get; set; }
                 public byte[] CtrlPixels { get; set; }
                 public int CtrlStride { get; set; }
@@ -20466,10 +20580,12 @@ namespace CSharpExtendedCommands
             }
         }
         public class ControlListBoxItemArgs : EventArgs { public ControlListBoxItemArgs() { } public ControlListBoxItemArgs(Control item, Control lastItem) { Item = item; LastItem = lastItem; } public Control Item { get; } public Control LastItem { get; } }
-        public class DownloaderProgressBar : ProgressBar
+        [DefaultEvent("DownloadFinished")]
+        public class DownloaderProgressBar : Component
         {
             public DownloaderProgressBar() { }
             public bool AutoUpdateProgressBar { get; set; } = true;
+            public ProgressBar Bar { get; set; }
             public event AsyncCompletedEventHandler DownloadFinished;
             public event System.Net.DownloadProgressChangedEventHandler DownloadProgressChanged;
             public void DownloadFileAsync(string URL, string Destination)
@@ -20483,8 +20599,8 @@ namespace CSharpExtendedCommands
             {
                 if (AutoUpdateProgressBar)
                 {
-                    this.Maximum = (int)e.TotalBytesToReceive / 100;
-                    this.Value = (int)e.BytesReceived / 100;
+                    Bar.Maximum = (int)e.TotalBytesToReceive / 100;
+                    Bar.Value = (int)e.BytesReceived / 100;
                 }
                 DownloadProgressChanged?.Invoke(this, e);
             }
