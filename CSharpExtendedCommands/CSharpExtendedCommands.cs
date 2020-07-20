@@ -17854,7 +17854,6 @@ namespace CSharpExtendedCommands
             [ProvideProperty("Decoration", typeof(Control))]
             public class Animator : Component, IExtenderProvider
             {
-                IContainer components = null;
                 protected List<QueueItem> queue = new List<QueueItem>();
                 private Thread thread;
                 Timer timer;
@@ -18133,7 +18132,6 @@ namespace CSharpExtendedCommands
                     }));
                 }
 
-                int counter;
 
                 private void DoAnimation(QueueItem item)
                 {
@@ -20583,7 +20581,7 @@ namespace CSharpExtendedCommands
         [DefaultEvent("DownloadFinished")]
         public class DownloaderProgressBar : Component
         {
-            public DownloaderProgressBar() { }
+            public DownloaderProgressBar(ProgressBar bar) { Bar = bar; }
             public bool AutoUpdateProgressBar { get; set; } = true;
             public ProgressBar Bar { get; set; }
             public event AsyncCompletedEventHandler DownloadFinished;

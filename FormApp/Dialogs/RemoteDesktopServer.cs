@@ -25,7 +25,7 @@ namespace FormApp.Dialogs
         #region Properties
         public int Port { get; set; } = 54782;
         [Browsable(false), CompilerGenerated]
-        public bool Enabled { get; private set; }
+        public new bool Enabled { get; private set; }
         #endregion
 
         #region Constructors
@@ -49,7 +49,9 @@ namespace FormApp.Dialogs
         }
         public void Initialize()
         {
+#pragma warning disable CS0618 // Just for simplicity - Type or member is obsolete
             listener = new TcpListener(Port);
+#pragma warning restore CS0618 // Type or member is obsolete
             ClientUpdater = new Thread(OnClientUpdate);
             binaryFormatter = new BinaryFormatter();
         }
