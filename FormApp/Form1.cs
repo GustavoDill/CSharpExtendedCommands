@@ -122,7 +122,6 @@ namespace FormApp
         Form m = new Main();
         private void button6_Click(object sender, EventArgs e)
         {
-            ZipExplorer explorer = new ZipExplorer(new System.IO.Compression.ZipArchive(System.IO.File.Open("Launcher.zip", System.IO.FileMode.OpenOrCreate)));
 
         }
 

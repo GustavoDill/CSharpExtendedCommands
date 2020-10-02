@@ -18,7 +18,6 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
@@ -41,162 +40,162 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace CSharpExtendedCommands
 {
-//    namespace Data
-//    {
-//        public class ZipExplorer : IDisposable
-//        {
-//            bool doneIndexing1 = false;
-//            bool doneIndexing2 = false;
-//            public bool IndexingComplete { get => doneIndexing1 && doneIndexing2; }
-//            private void Index()
-//            {
-//                var i = 0;
-//                var i2 = Archive.Entries.Count / 2;
-//                new Thread(() =>
-//                {
-//                    for (; i < i2; i++)
-//                    {
-//                        if (Archive.Entries[i].FullName.EndsWith("/"))
-//                            directories.Add(Archive.Entries[i]);
-//                        else
-//                            files.Add(Archive.Entries[i]);
-//                    }
-//                    doneIndexing2 = true;
-//                }).Start();
-//                new Thread(() =>
-//                {
-//                    for (int j = i2; j < Archive.Entries.Count; j++)
-//                    {
-//                        if (Archive.Entries[j].FullName.EndsWith("/"))
-//                            directories.Add(Archive.Entries[j]);
-//                        else
-//                            files.Add(Archive.Entries[j]);
-//                    }
-//                    doneIndexing1 = true;
-//                }).Start();
-//            }
-//            public Icon GetIcon(ZipArchiveEntry e)
-//            {
-//                if (e.FullName.EndsWith("/"))
-//                    return null;
-//                var s = e.Open();
-//                var icon = new Icon(s);
-//                s.Close();
-//                return icon;
-//            }
-//            List<ZipArchiveEntry> files = new List<ZipArchiveEntry>();
-//            List<ZipArchiveEntry> directories = new List<ZipArchiveEntry>();
-//            public ZipArchiveEntry this[string path]
-//            {
-//                get
-//                {
-//                    ZipArchiveEntry entry = null;
-//                    bool t1F = false;
-//#pragma warning disable CS0219 // False warning - Variable is assigned but its value is never used
-//                    bool t2F = false;
-//#pragma warning restore CS0219 // Variable is assigned but its value is never used
-//                    new Thread(() =>
-//                    {
-//                        for (int i = 0; i < Archive.Entries.Count / 2; i++)
-//                        {
-//                            if (entry != null)
-//                                break;
-//                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
-//                            {
-//                                entry = Archive.Entries[i];
-//                                break;
-//                            }
-//                        }
-//                        t1F = true;
-//                    }).Start();
-//                    new Thread(() =>
-//                    {
-//                        for (int i = Archive.Entries.Count / 2; i < Archive.Entries.Count; i++)
-//                        {
-//                            if (entry != null)
-//                                break;
-//                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
-//                            {
-//                                entry = Archive.Entries[i];
-//                                break;
-//                            }
-//                        }
-//                        t2F = true;
-//                    }).Start();
-//                    while (entry == null && (!t1F || !t1F))
-//                    { Thread.Sleep(10); }
-//                    return entry;
-//                }
-//            }
-
-//            public void Dispose()
-//            {
-//                Archive.Dispose();
-//            }
-
-//            public ZipExplorer(ZipArchive archive)
-//            {
-//                Archive = archive;
-//                new Thread(Index).Start();
-//            }
-//            public ZipArchive Archive { get; }
-//        }
-//    }
-    //namespace Info
-    //{
-    //    public static partial class ComputerInfo
+    //    namespace Data
     //    {
-    //        public static string OSFullName()
+    //        public class ZipExplorer : IDisposable
     //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.OSFullName;
-    //        }
-    //        public static ulong GetAvailablePhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailablePhysicalMemory;
-    //        }
-    //        public static ulong GetAvailableVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.AvailableVirtualMemory;
-    //        }
-    //        public static System.Globalization.CultureInfo InstalledLanguage()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.InstalledUICulture;
-    //        }
-    //        public static ulong GetTotalPhysicalMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalPhysicalMemory;
-    //        }
-    //        public static ulong GetTotalVirtualMemory()
-    //        {
-    //            Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
-    //            return computerInfo.Info.TotalVirtualMemory;
-    //        }
+    //            bool doneIndexing1 = false;
+    //            bool doneIndexing2 = false;
+    //            public bool IndexingComplete { get => doneIndexing1 && doneIndexing2; }
+    //            private void Index()
+    //            {
+    //                var i = 0;
+    //                var i2 = Archive.Entries.Count / 2;
+    //                new Thread(() =>
+    //                {
+    //                    for (; i < i2; i++)
+    //                    {
+    //                        if (Archive.Entries[i].FullName.EndsWith("/"))
+    //                            directories.Add(Archive.Entries[i]);
+    //                        else
+    //                            files.Add(Archive.Entries[i]);
+    //                    }
+    //                    doneIndexing2 = true;
+    //                }).Start();
+    //                new Thread(() =>
+    //                {
+    //                    for (int j = i2; j < Archive.Entries.Count; j++)
+    //                    {
+    //                        if (Archive.Entries[j].FullName.EndsWith("/"))
+    //                            directories.Add(Archive.Entries[j]);
+    //                        else
+    //                            files.Add(Archive.Entries[j]);
+    //                    }
+    //                    doneIndexing1 = true;
+    //                }).Start();
+    //            }
+    //            public Icon GetIcon(ZipArchiveEntry e)
+    //            {
+    //                if (e.FullName.EndsWith("/"))
+    //                    return null;
+    //                var s = e.Open();
+    //                var icon = new Icon(s);
+    //                s.Close();
+    //                return icon;
+    //            }
+    //            List<ZipArchiveEntry> files = new List<ZipArchiveEntry>();
+    //            List<ZipArchiveEntry> directories = new List<ZipArchiveEntry>();
+    //            public ZipArchiveEntry this[string path]
+    //            {
+    //                get
+    //                {
+    //                    ZipArchiveEntry entry = null;
+    //                    bool t1F = false;
+    //#pragma warning disable CS0219 // False warning - Variable is assigned but its value is never used
+    //                    bool t2F = false;
+    //#pragma warning restore CS0219 // Variable is assigned but its value is never used
+    //                    new Thread(() =>
+    //                    {
+    //                        for (int i = 0; i < Archive.Entries.Count / 2; i++)
+    //                        {
+    //                            if (entry != null)
+    //                                break;
+    //                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+    //                            {
+    //                                entry = Archive.Entries[i];
+    //                                break;
+    //                            }
+    //                        }
+    //                        t1F = true;
+    //                    }).Start();
+    //                    new Thread(() =>
+    //                    {
+    //                        for (int i = Archive.Entries.Count / 2; i < Archive.Entries.Count; i++)
+    //                        {
+    //                            if (entry != null)
+    //                                break;
+    //                            if (Archive.Entries[i].FullName == path || Archive.Entries[i].FullName + "/" == path)
+    //                            {
+    //                                entry = Archive.Entries[i];
+    //                                break;
+    //                            }
+    //                        }
+    //                        t2F = true;
+    //                    }).Start();
+    //                    while (entry == null && (!t1F || !t1F))
+    //                    { Thread.Sleep(10); }
+    //                    return entry;
+    //                }
+    //            }
 
-    //    }
-    //}
-    //namespace IO
-    //{
-    //    public static class FileSystem
-    //    {
-    //        public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
-    //        {
-    //            var shell = new IWshRuntimeLibrary.WshShell();
-    //            IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
-    //            if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
-    //            if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
-    //            if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
-    //            if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
-    //            shortcut.TargetPath = ExePath;
-    //            if (string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
-    //            shortcut.Save();
+    //            public void Dispose()
+    //            {
+    //                Archive.Dispose();
+    //            }
+
+    //            public ZipExplorer(ZipArchive archive)
+    //            {
+    //                Archive = archive;
+    //                new Thread(Index).Start();
+    //            }
+    //            public ZipArchive Archive { get; }
     //        }
     //    }
-    //}
+    //    namespace Info
+    //    {
+    //        public static partial class ComputerInfo
+    //        {
+    //            public static string OSFullName()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.OSFullName;
+    //            }
+    //            public static ulong GetAvailablePhysicalMemory()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.AvailablePhysicalMemory;
+    //            }
+    //            public static ulong GetAvailableVirtualMemory()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.AvailableVirtualMemory;
+    //            }
+    //            public static System.Globalization.CultureInfo InstalledLanguage()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.InstalledUICulture;
+    //            }
+    //            public static ulong GetTotalPhysicalMemory()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.TotalPhysicalMemory;
+    //            }
+    //            public static ulong GetTotalVirtualMemory()
+    //            {
+    //                Microsoft.VisualBasic.Devices.Computer computerInfo = new Microsoft.VisualBasic.Devices.Computer();
+    //                return computerInfo.Info.TotalVirtualMemory;
+    //            }
+
+    //        }
+    //    }
+    //    namespace IO
+    //    {
+    //        public static class FileSystem
+    //        {
+    //            public static void CreateShortcut(string ExePath, string LnkPath, string Arguments = null, string IconPath = null, string Description = null, string WorkingDirectory = null, string Hotkeys = null)
+    //            {
+    //                var shell = new IWshRuntimeLibrary.WshShell();
+    //                IWshRuntimeLibrary.IWshShortcut shortcut = shell.CreateShortcut(LnkPath);
+    //                if (!string.IsNullOrEmpty(Arguments)) { shortcut.Arguments = Arguments; }
+    //                if (!string.IsNullOrEmpty(WorkingDirectory)) { shortcut.WorkingDirectory = WorkingDirectory; }
+    //                if (!string.IsNullOrEmpty(Description)) { shortcut.Description = Description; }
+    //                if (!string.IsNullOrEmpty(Hotkeys)) { shortcut.Hotkey = Hotkeys; }
+    //                shortcut.TargetPath = ExePath;
+    //                if (string.IsNullOrEmpty(IconPath)) { shortcut.IconLocation = ExePath; } else { shortcut.IconLocation = IconPath; }
+    //                shortcut.Save();
+    //            }
+    //        }
+    //    }
     namespace Web
     {
         namespace HtmlAgilityPack
@@ -13433,12 +13432,12 @@ namespace CSharpExtendedCommands
                 }
                 public static TreeNode GetNodeByPath(this TreeView tree, string path)
                 {
-                    var paths = path.Split('\\');
+                    var paths = path.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
                     TreeNode cNode = null;
                     foreach (TreeNode n in tree.Nodes)
-                        if (n.Text == path.Split('\\')[0])
+                        if (n.Text == paths[0])
                         { cNode = n; break; }
-                    if (path.Split('\\').Length == 1)
+                    if (paths.Length == 1)
                         return cNode;
                     for (int i = 1; i < paths.Count(); i++)
                     {
@@ -13453,7 +13452,7 @@ namespace CSharpExtendedCommands
                 }
                 public static TreeNode GetNodeByPath(this TreeNode root, string path)
                 {
-                    var paths = path.Split('\\');
+                    var paths = path.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
                     TreeNode cNode = root;
                     for (int i = 0; i < paths.Count(); i++)
                     {
@@ -13475,6 +13474,16 @@ namespace CSharpExtendedCommands
                     nodes.Clear();
                     foreach (var item in sn)
                         nodes.Add(item);
+                }
+                public static void Sort(this TreeView tree)
+                {
+                    tree.Nodes.SortAllTree();
+                }
+                private static void SortAllTree(this TreeNodeCollection rootNode)
+                {
+                    rootNode.Sort();
+                    foreach (TreeNode node in rootNode)
+                        node.Nodes.SortAllTree();
                 }
             }
         }
@@ -13677,6 +13686,21 @@ namespace CSharpExtendedCommands
                 var rd = serializer.Deserialize(tr);
                 tr.Close();
                 return (T)rd;
+            }
+            public static void SaveToBinary<T>(this T obj, string path)
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                Stream file = File.OpenWrite(path);
+                formatter.Serialize(file, obj);
+                file.Close();
+            }
+            public static T LoadFromBinary<T>(this T obj, string path)
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                Stream file = File.OpenRead(path);
+                var r = formatter.Deserialize(file);
+                file.Close();
+                return (T)r;
             }
             public static System.IO.FileInfo[] GetAllFiles(this System.IO.DirectoryInfo dir)
             {
@@ -21609,7 +21633,7 @@ namespace CSharpExtendedCommands
             public Color NormalColor
             {
                 get { return this._NormalColor; }
-                set { this._NormalColor = value; }
+                set { this._NormalColor = value; BackColor = value; }
             }
             private Color _HoverColor = Color.RoyalBlue;
             public Color HoverColor
@@ -21662,7 +21686,7 @@ namespace CSharpExtendedCommands
             protected override void OnMouseUp(MouseEventArgs mevent)
             {
                 base.OnMouseUp(mevent);
-                BackColor = NormalColor;
+                BackColor = HoverColor;
             }
         }
         public static class GraphicalInterface
