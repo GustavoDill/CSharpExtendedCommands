@@ -2,6 +2,7 @@
 using CSharpExtendedCommands.DataTypeExtensions;
 using CSharpExtendedCommands.DataTypeExtensions.Converters;
 using CSharpExtendedCommands.DataTypeExtensions.RegularExpressions;
+using CSharpExtendedCommands.DataTypeExtensions.UI;
 using CSharpExtendedCommands.Info;
 using Microsoft.CSharp;
 using System;
@@ -37,6 +38,7 @@ using System.Xml.XPath;
 using System.Xml.Xsl;
 using static CSharpExtendedCommands.Converter;
 using Timer = System.Windows.Forms.Timer;
+using System.IO.Compression;
 
 namespace CSharpExtendedCommands
 {
@@ -20610,6 +20612,10 @@ namespace CSharpExtendedCommands
             public ProgressBar Bar { get; set; }
             public event AsyncCompletedEventHandler DownloadFinished;
             public event System.Net.DownloadProgressChangedEventHandler DownloadProgressChanged;
+            public decimal GetPercetage()
+            {
+                return Bar.GetPercentage();
+            }
             public void DownloadFileAsync(string URL, string Destination)
             {
                 System.Net.WebClient net = new System.Net.WebClient();
