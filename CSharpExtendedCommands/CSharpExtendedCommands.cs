@@ -20612,7 +20612,7 @@ namespace CSharpExtendedCommands
             public ProgressBar Bar { get; set; }
             public event AsyncCompletedEventHandler DownloadFinished;
             public event System.Net.DownloadProgressChangedEventHandler DownloadProgressChanged;
-            public decimal GetPercetage()
+            public decimal GetPercentage()
             {
                 return Bar.GetPercentage();
             }
@@ -24505,6 +24505,15 @@ namespace CSharpExtendedCommands
                 }
                 return BinaryToHexadecimal(BinaryResult);
             }
+            string RepeatString(string v, int count)
+            {
+                string r = "";
+                for (int i = 0; i < count; i++)
+                {
+                    r += v;
+                }
+                return r;
+            }
             /// <summary>
             /// Fills a block of bytes with the given Pattern (only 2 chars)
             /// </summary>
@@ -24514,23 +24523,37 @@ namespace CSharpExtendedCommands
             /// <returns>Returns "true" for success and "false" for failure</returns>
             public bool FillBlock(int StartAddress, int EndAddress, string Value)
             {
-                System.IO.BinaryWriter writer = new System.IO.BinaryWriter(OpenWrite);
-                try
-                {
-                    int length = EndAddress - StartAddress + 1;
-                    var v = "";
-                    for (int i = 0; i < length; i++)
-                        v += Value;
-                    writer.BaseStream.Position = StartAddress;
-                    writer.Write(GetBuffer(v));
-                    writer.Close();
-                    return true;
-                }
-                catch
-                {
-                    writer.Close();
-                    return false;
-                }
+                var total = (EndAddress - StartAddress + 1);
+                string fillValue;
+                if (Value.Length == 1)
+                    fillValue = "0" + Value;
+                else if (Value.Length == 2)
+                    fillValue = Value;
+                else
+                    fillValue = Value;
+                string data;
+                if (fillValue.Length > 2)
+                    data = RepeatString(fillValue, total / (fillValue.Length / 2));
+                else
+                    data = RepeatString(fillValue, total);
+                return WriteMultipleHexValues(StartAddress, data);
+                //    System.IO.BinaryWriter writer = new System.IO.BinaryWriter(OpenWrite);
+                //try
+                //{
+                //    int length = EndAddress - StartAddress + 1;
+                //    var v = "";
+                //    for (int i = 0; i < length; i++)
+                //        v += Value;
+                //    writer.BaseStream.Position = StartAddress;
+                //    writer.Write(GetBuffer(v));
+                //    writer.Close();
+                //    return true;
+                //}
+                //catch
+                //{
+                //    writer.Close();
+                //    return false;
+                //}
             }
             /// <summary>
             /// Checks if a block of bytes is all the given pattern (only 2 chars)
