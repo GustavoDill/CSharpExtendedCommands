@@ -39,6 +39,7 @@ using System.Xml.Xsl;
 using static CSharpExtendedCommands.Converter;
 using Timer = System.Windows.Forms.Timer;
 using System.IO.Compression;
+using System.Security.Principal;
 
 namespace CSharpExtendedCommands
 {
@@ -13448,7 +13449,7 @@ namespace CSharpExtendedCommands
                             if (n.Text == paths[i])
                             { cNode = n; break; }
                         if (tmp == cNode)
-                            throw new Exception("Path not found");
+                            return null;
                     }
                     return cNode;
                 }
@@ -13463,7 +13464,7 @@ namespace CSharpExtendedCommands
                             if (n.Text == paths[i])
                             { cNode = n; break; }
                         if (tmp == cNode)
-                            throw new Exception("Path not found");
+                            return null;
                     }
                     return cNode;
                 }
@@ -21827,6 +21828,22 @@ namespace CSharpExtendedCommands
             public static Point GetMouseInFormLocation(Form frm, int Xoffset = 12, int Yoffset = 30)
             {
                 return new Point(Control.MousePosition.X - frm.Location.X - Xoffset, Control.MousePosition.Y - frm.Location.Y - Yoffset);
+            }
+            public static bool IsAdministrator()
+            {
+                return (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator));
+            }
+            public static void RestartAsAdmin()
+            {
+                var ps = new ProcessStartInfo();
+                ps.FileName = Process.GetCurrentProcess().ProcessName.ToString() + ".exe";
+                ps.Verb = "runas";
+
+                var process = new Process();
+                process.StartInfo = ps;
+                process.Start();
+
+                Application.Exit();
             }
         }
         public class CustomMenu
