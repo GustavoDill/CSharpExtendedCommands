@@ -23246,30 +23246,6 @@ namespace CSharpExtendedCommands
     }
     public static class Maths
     {
-        public static DateTime GetDate(int day, int month, int year)
-        {
-            var time = TimeSpan.FromDays(year * 365);
-            time = time.Add(TimeSpan.FromDays(day));
-            var date = new DateTime(time.Ticks);
-            while (date.Year < year)
-            {
-                time = time.Add(TimeSpan.FromDays(365));
-                date = new DateTime(time.Ticks);
-            }
-            while (date.Month < month)
-            {
-                time = time.Add(TimeSpan.FromDays(20));
-                date = new DateTime(time.Ticks);
-            }
-            if (date.Day == day && date.Month == month && date.Year == year)
-                return date;
-            while (!(date.Day == day && date.Month == month && date.Year == year))
-            {
-                time = time.Add(TimeSpan.FromDays(-1));
-                date = new DateTime(time.Ticks);
-            }
-            return date;
-        }
         public static string GetFraction(double val)
         {
             for (double i = 1; i <= (int)(val * 50 + 1); i++)
