@@ -11615,7 +11615,7 @@ namespace CSharpExtendedCommands
                         var actionField = GetType().GetField(name).GetValue(this);
                         if (actionField == null)
                             return;
-                        var prop = actionField.GetType().GetProperty("Method").GetValue(actionField);
+                        var prop = actionField.GetType().GetProperty("Method").GetValue(actionField, null);
                         if (prop == null)
                             return;
                         var f = (MethodInfo)prop;
@@ -13371,6 +13371,14 @@ namespace CSharpExtendedCommands
         {
             public static class UIClassExtensions
             {
+                public static Point GetMouseInFormPosition(this Form form)
+                {
+                    return CSharpExtendedCommands.UI.Info.GetMouseInFormLocation(form, 12, 30);
+                }
+                public static Point GetMouseInFormPosition(this Form form, int xoffset, int yoffset)
+                {
+                    return CSharpExtendedCommands.UI.Info.GetMouseInFormLocation(form, xoffset, yoffset);
+                }
                 public static void CenterInScreen(this Form frm)
                 {
                     int frmW = frm.Size.Width;
@@ -13440,7 +13448,7 @@ namespace CSharpExtendedCommands
                     foreach (TreeNode n in tree.Nodes)
                         if (n.Text == paths[0])
                         { cNode = n; break; }
-                    if (paths.Length == 1)
+                    if (paths.Length == 1 || cNode == null)
                         return cNode;
                     for (int i = 1; i < paths.Count(); i++)
                     {
