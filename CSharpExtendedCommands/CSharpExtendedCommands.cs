@@ -24815,17 +24815,25 @@ namespace CSharpExtendedCommands
             /// <returns>Returns "true" for success; "false" for fail</returns>
             public bool WriteASCValue(int Address, string Value = "0")
             {
-                System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
                 try
                 {
-                    writer.BaseStream.Position = Address;
-                    writer.Write(Convert.ToByte(HexadecimalToDecimal(TextToHexadecimal(Value))));
-                    writer.Close();
-                    return true;
+                    System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
+                    try
+                    {
+                        writer.BaseStream.Position = Address;
+                        writer.Write(Convert.ToByte(HexadecimalToDecimal(TextToHexadecimal(Value))));
+                        writer.Close();
+                        return true;
+                    }
+                    catch
+                    {
+                        writer.Close();
+                        return false;
+                    }
                 }
-                catch
+                catch (Exception)
                 {
-                    writer.Close();
+
                     return false;
                 }
             }
@@ -24837,17 +24845,25 @@ namespace CSharpExtendedCommands
             /// <returns>Returns "true" for success; "false" for fail</returns>
             public bool WriteInvertedASCValue(int Address, string Value = "0")
             {
-                System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
                 try
                 {
-                    writer.BaseStream.Position = Address;
-                    writer.Write(Convert.ToByte(HexadecimalToDecimal(TextToHexadecimal(InvertASCValue(Value)))));
-                    writer.Close();
-                    return true;
+                    System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
+                    try
+                    {
+                        writer.BaseStream.Position = Address;
+                        writer.Write(Convert.ToByte(HexadecimalToDecimal(TextToHexadecimal(InvertASCValue(Value)))));
+                        writer.Close();
+                        return true;
+                    }
+                    catch
+                    {
+                        writer.Close();
+                        return false;
+                    }
                 }
-                catch
+                catch (Exception)
                 {
-                    writer.Close();
+
                     return false;
                 }
             }
@@ -24989,18 +25005,26 @@ namespace CSharpExtendedCommands
             /// <returns>Returns "true" for success; "false" for fail</returns>
             public bool WriteMultipleHexValues(int Address, string Value)
             {
-                System.IO.BinaryWriter writer = new System.IO.BinaryWriter(OpenWrite);
                 try
                 {
+                    System.IO.BinaryWriter writer = new System.IO.BinaryWriter(OpenWrite);
+                    try
+                    {
 
-                    writer.BaseStream.Position = Address;
-                    writer.Write(GetBuffer(Value));
-                    writer.Close();
-                    return true;
+                        writer.BaseStream.Position = Address;
+                        writer.Write(GetBuffer(Value));
+                        writer.Close();
+                        return true;
+                    }
+                    catch
+                    {
+                        writer.Close();
+                        return false;
+                    }
                 }
-                catch
+                catch (Exception)
                 {
-                    writer.Close();
+
                     return false;
                 }
             }
@@ -25013,17 +25037,25 @@ namespace CSharpExtendedCommands
             /// <returns>Returns "true" for success; "false" for fail</returns>
             public bool WriteMultipleInvertedHexValues(int Address, string Value)
             {
-                System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
                 try
                 {
-                    writer.BaseStream.Position = Address;
-                    writer.Write(GetBuffer(InvertHexBytes(Value)));
-                    writer.Close();
-                    return true;
+                    System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
+                    try
+                    {
+                        writer.BaseStream.Position = Address;
+                        writer.Write(GetBuffer(InvertHexBytes(Value)));
+                        writer.Close();
+                        return true;
+                    }
+                    catch
+                    {
+                        writer.Close();
+                        return false;
+                    }
                 }
-                catch
+                catch (Exception)
                 {
-                    writer.Close();
+
                     return false;
                 }
             }
