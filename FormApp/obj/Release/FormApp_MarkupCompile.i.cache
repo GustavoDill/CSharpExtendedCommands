@@ -1,10 +1,10 @@
 ﻿FormApp
 
 
-winexe
+exe
 C#
 .cs
-C:\Users\Gustavo\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\
+C:\Users\gusta\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\FormApp\obj\Release\
 FormApp
 none
 false
@@ -13,7 +13,7 @@ TRACE
 1-98425716
 
 17-1524129278
-261964105218
+26670650361
 UserControl1.xaml;
 
 True

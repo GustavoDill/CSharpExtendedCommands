@@ -13931,6 +13931,65 @@ namespace CSharpExtendedCommands
     }
     namespace Data
     {
+
+        namespace Compression
+        {
+            public static class Strings
+            {
+                private static void CopyTo(Stream src, Stream dest)
+                {
+                    byte[] bytes = new byte[4096];
+
+                    int cnt;
+
+                    while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
+                    {
+                        dest.Write(bytes, 0, cnt);
+                    }
+                }
+
+                public static byte[] Compress(string str)
+                {
+                    return Compress(str, Encoding.Default);
+                }
+                public static string Decompress(byte[] bytes)
+                {
+                    return Decompress(bytes, Encoding.Default);
+                }
+
+                public static byte[] Compress(string str, Encoding encoding)
+                {
+                    var bytes = encoding.GetBytes(str);
+
+                    using (var msi = new MemoryStream(bytes))
+                    using (var mso = new MemoryStream())
+                    {
+                        using (var gs = new GZipStream(mso, CompressionMode.Compress))
+                        {
+                            //msi.CopyTo(gs);
+                            CopyTo(msi, gs);
+                        }
+
+                        return mso.ToArray();
+                    }
+                }
+
+                public static string Decompress(byte[] bytes, Encoding encoding)
+                {
+                    using (var msi = new MemoryStream(bytes))
+                    using (var mso = new MemoryStream())
+                    {
+                        using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                        {
+                            //gs.CopyTo(mso);
+                            CopyTo(gs, mso);
+                        }
+
+                        return encoding.GetString(mso.ToArray());
+                    }
+                }
+            }
+        }
         public class IniFile
         {
             string Path;
@@ -23254,6 +23313,27 @@ namespace CSharpExtendedCommands
     }
     public static class Maths
     {
+        public static int[] MMC(int number)
+        {
+            var nums = GetPrimeNumbers(number);
+            int result = number;
+            List<int> n = new List<int>();
+            do
+            {
+                for (int i = 0; i < nums.Length; i++)
+                {
+                    if (result % nums[i] == 0)
+                    {
+                        n.Add(nums[i]);
+                        result = result / nums[i];
+                        break;
+                    }
+                }
+                
+            }
+            while (result != 1);
+            return n.ToArray();
+        }
         public static string GetFraction(double val)
         {
             for (double i = 1; i <= (int)(val * 50 + 1); i++)
@@ -23476,6 +23556,8 @@ namespace CSharpExtendedCommands
                     }
                 }
             }
+            if (number >= 2)
+                arr.Insert(0, 2);
             return arr.ToArray();
         }
         public class MathParser
