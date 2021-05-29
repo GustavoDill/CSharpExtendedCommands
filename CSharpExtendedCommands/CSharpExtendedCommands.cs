@@ -13189,12 +13189,18 @@ namespace CSharpExtendedCommands
             }
             public static CompilerResults CSharpSourceCode(string sourceCode, string frameworkVersion, string outputFile, string[] referencedAssemblies, out string output)
             {
+                return CSharpSourceCode(sourceCode, frameworkVersion, outputFile, referencedAssemblies, null, out output);
+            }
+            public static CompilerResults CSharpSourceCode(string sourceCode, string frameworkVersion, string outputFile, string[] referencedAssemblies, string compilerOptions, out string output)
+            {
                 CSharpCodeProvider csc = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", frameworkVersion } });
                 var outputVariable = "";
                 CompilerParameters parameters = new CompilerParameters(referencedAssemblies, outputFile, true)
                 {
                     GenerateExecutable = true
                 };
+                if (!string.IsNullOrEmpty(compilerOptions))
+                    parameters.CompilerOptions = compilerOptions;
                 CompilerResults results = csc.CompileAssemblyFromSource(parameters, sourceCode);
                 if (results.Errors.HasErrors)
                     results.Errors.Cast<CompilerError>().ToList().ForEach(error => outputVariable += error.ErrorText + "\r\n");
@@ -13931,65 +13937,6 @@ namespace CSharpExtendedCommands
     }
     namespace Data
     {
-
-        namespace Compression
-        {
-            public static class Strings
-            {
-                private static void CopyTo(Stream src, Stream dest)
-                {
-                    byte[] bytes = new byte[4096];
-
-                    int cnt;
-
-                    while ((cnt = src.Read(bytes, 0, bytes.Length)) != 0)
-                    {
-                        dest.Write(bytes, 0, cnt);
-                    }
-                }
-
-                public static byte[] Compress(string str)
-                {
-                    return Compress(str, Encoding.Default);
-                }
-                public static string Decompress(byte[] bytes)
-                {
-                    return Decompress(bytes, Encoding.Default);
-                }
-
-                public static byte[] Compress(string str, Encoding encoding)
-                {
-                    var bytes = encoding.GetBytes(str);
-
-                    using (var msi = new MemoryStream(bytes))
-                    using (var mso = new MemoryStream())
-                    {
-                        using (var gs = new GZipStream(mso, CompressionMode.Compress))
-                        {
-                            //msi.CopyTo(gs);
-                            CopyTo(msi, gs);
-                        }
-
-                        return mso.ToArray();
-                    }
-                }
-
-                public static string Decompress(byte[] bytes, Encoding encoding)
-                {
-                    using (var msi = new MemoryStream(bytes))
-                    using (var mso = new MemoryStream())
-                    {
-                        using (var gs = new GZipStream(msi, CompressionMode.Decompress))
-                        {
-                            //gs.CopyTo(mso);
-                            CopyTo(gs, mso);
-                        }
-
-                        return encoding.GetString(mso.ToArray());
-                    }
-                }
-            }
-        }
         public class IniFile
         {
             string Path;
@@ -20293,9 +20240,12 @@ namespace CSharpExtendedCommands
                 Parent = control.TopLevelControl;
                 try
                 {
-                    e.OldControl.MouseEnter -= Control_MouseEnter;
-                    e.OldControl.MouseLeave -= Control_MouseLeave;
-                    e.OldControl.MouseMove -= Control_MouseMove;
+                    if (e.OldControl != null)
+                    {
+                        e.OldControl.MouseEnter -= Control_MouseEnter;
+                        e.OldControl.MouseLeave -= Control_MouseLeave;
+                        e.OldControl.MouseMove -= Control_MouseMove;
+                    }
                 }
                 catch { }
                 AtatchedControl = control;
@@ -22701,21 +22651,26 @@ namespace CSharpExtendedCommands
                 }
             }
 
+            public bool Enabled { get; set; }
+
             public DragControl()
             {
+                Enabled = true;
                 Method_3();
                 _ = LicenseManager.UsageMode;
             }
 
             public DragControl(IContainer container)
             {
+                Enabled = true;
                 container.Add(this);
                 Method_3();
             }
 
             public void Grab(Control _control)
             {
-                drag_0.Grab(_control);
+                if (Enabled)
+                    drag_0.Grab(_control);
             }
 
             public void Grab()
@@ -23329,7 +23284,7 @@ namespace CSharpExtendedCommands
                         break;
                     }
                 }
-                
+
             }
             while (result != 1);
             return n.ToArray();
@@ -23556,8 +23511,6 @@ namespace CSharpExtendedCommands
                     }
                 }
             }
-            if (number >= 2)
-                arr.Insert(0, 2);
             return arr.ToArray();
         }
         public class MathParser
@@ -24459,6 +24412,149 @@ namespace CSharpExtendedCommands
             public string Src { get; }
             public string Dest { get; }
         }
+        public class DumpStream : IDisposable
+        {
+            public DumpStream(string file)
+            {
+                FilePath = file;
+                baseStream = File.Open(file, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                writer = new BinaryWriter(baseStream);
+                reader = new BinaryReader(baseStream);
+            }
+            public FileStream BaseStream { get => baseStream; }
+            public long TotalAddresses { get { return baseStream.Length - 1; } }
+            public string FilePath { get; }
+            private FileStream baseStream;
+            private BinaryReader reader;
+            private BinaryWriter writer;
+            public BinaryReader GetReader()
+            {
+                return reader;
+            }
+            public BinaryWriter GetWriter()
+            {
+                return writer;
+            }
+            public byte Read(long address)
+            {
+                baseStream.Position = address;
+                return reader.ReadByte();
+            }
+            public byte[] Read(long startAddress, long endAddress)
+            {
+                baseStream.Position = startAddress;
+                var bytes = reader.ReadBytes((int)(endAddress - startAddress + 1));
+                return bytes;
+            }
+            public string ReadAsString(long startAddress, long endAddress)
+            {
+                var bts = Read(startAddress, endAddress);
+                string str = "";
+                for (int i = 0; i < bts.Length; i++)
+                {
+                    str += bts[i].ToString("X2");
+                }
+                return str;
+            }
+            public string ReadASC(long address)
+            {
+                baseStream.Position = address;
+                return Encoding.UTF8.GetString(new byte[] { Read(address) });
+            }
+            public string ReadASC(long startAddress, long endAddress)
+            {
+                baseStream.Position = startAddress;
+                return Encoding.UTF8.GetString(Read(startAddress, endAddress));
+            }
+            public bool WriteASC(string text, long address)
+            {
+                try
+                {
+                    baseStream.Position = address;
+                    writer.Write(Encoding.UTF8.GetBytes(text));
+                    return true;
+                }
+                catch { return false; }
+            }
+            public bool Write(byte value, long address)
+            {
+                try
+                {
+                    baseStream.Position = address;
+                    writer.Write(value);
+                    return true;
+                }
+                catch { return false; }
+            }
+            public bool Write(string values, long address)
+            {
+                if (values.Length <= 2)
+                    return Write((byte)Convert.ToInt32(values, 16), address);
+                else
+                {
+                    try
+                    {
+                        baseStream.Position = address;
+                        for (int i = 0; i < values.Length; i += 2)
+                        {
+                            writer.Write((byte)Convert.ToInt32(values.Substring(i, 2), 16));
+                        }
+                        return true;
+                    }
+                    catch { return false; }
+                }
+            }
+            public bool WriteBytes(byte[] bytes, long address)
+            {
+                try
+                {
+                    baseStream.Position = address;
+                    writer.Write(bytes);
+                    return true;
+                }
+                catch { return false; }
+            }
+            public void Flush()
+            {
+                writer.Flush();
+            }
+            public void Close()
+            {
+                Dispose();
+            }
+            public void Dispose()
+            {
+                writer.Close();
+                reader.Close();
+                BaseStream.Close();
+            }
+            public long Checksum(long startAddress, long endAddress)
+            {
+                var bts = Read(startAddress, endAddress);
+                long s = 0;
+                foreach (var b in bts)
+                    s += b;
+                return s;
+            }
+            public bool FillBlock(long startAddress, long endAddress, byte value)
+            {
+                try
+                {
+                    baseStream.Position = startAddress;
+                    long length = endAddress - startAddress + 1;
+                    for (int i = 0; i < length; i++)
+                    {
+                        writer.Write(value);
+                    }
+                    return true;
+                }
+                catch { return false; }
+            }
+            public bool FillBlock(long startAddress, long endAddress, string value)
+            {
+                return FillBlock(startAddress, endAddress, (byte)Convert.ToInt32(value, 16));
+            }
+        }
         public class HexDumpStream
         {
             readonly string file = null;
@@ -24471,27 +24567,7 @@ namespace CSharpExtendedCommands
             public string Checksum(int type, int StartAddress, int EndAddress)
             {
                 string Data = ReadMultipleHexValues(StartAddress, EndAddress);
-                int result = 0;
-                foreach (string bt in Data.Split('-'))
-                {
-                    int Dec = Converter.HexadecimalToDecimal(bt);
-                    result += Dec;
-                }
-                string hexResult = Converter.DecimalToHexadecimal(result).PadLeft(type / 4, '0');
-                if (type == 64)
-                {
-                    string FinalResult = null;
-                    string[] Arr = Converter.ByteStringToByteArray(hexResult);
-                    for (int Cur = Arr.Length - 1; Cur >= 0; Cur--)
-                    {
-                        FinalResult += Arr[Cur];
-                    }
-                    return FinalResult;
-                }
-                else
-                {
-                    return hexResult.Substring(hexResult.Length - type / 4);
-                }
+                return HexDumpStream.Checksum(type, Data);
             }
             public static string Checksum(int type, string ByteData)
             {
@@ -24819,25 +24895,17 @@ namespace CSharpExtendedCommands
                 {
                     if (Side == "Right")
                     {
-                        string LeftSide = HexadecimalToDecimal(ReadHexValue(Address, "Left")).ToString();
-                        string RightSide = HexadecimalToDecimal(Value).ToString();
+                        string LeftSide = ReadHexValue(Address, "Left").ToString();
+                        string RightSide = Value[Value.Length - 1].ToString();
                         string Temp = LeftSide + RightSide;
-                        int writeValue = Int32.Parse(Temp);
-                        System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
-                        writer.BaseStream.Position = Address;
-                        writer.Write(Convert.ToByte(writeValue));
-                        writer.Close();
+                        return WriteHexValue(Address, LeftSide + RightSide);
                     }
                     if (Side == "Left")
                     {
-                        string RightSide = HexadecimalToDecimal(ReadHexValue(Address, "Right")).ToString();
-                        string LeftSide = HexadecimalToDecimal(Value).ToString();
+                        string RightSide = ReadHexValue(Address, "Right");
+                        string LeftSide = Value[0].ToString();
                         string Temp = LeftSide + RightSide;
-                        int writeValue = Int32.Parse(Temp);
-                        System.IO.BinaryWriter writer = new System.IO.BinaryWriter(System.IO.File.OpenWrite(file));
-                        writer.BaseStream.Position = Address;
-                        writer.Write(Convert.ToByte(writeValue));
-                        writer.Close();
+                        return WriteHexValue(Address, LeftSide + RightSide);
                     }
                     else
                     {
