@@ -54,7 +54,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code.Compile.cs" />
     <Compile Include="CSharpExtendedCommands.cs" />
+    <Compile Include="DataTypeExtensions\Collections.cs" />
+    <Compile Include="DataTypeExtensions\Converters.cs" />
+    <Compile Include="DataTypeExtensions\DataTypeExtensions.cs" />
+    <Compile Include="DataTypeExtensions\Formatting.cs" />
+    <Compile Include="DataTypeExtensions\RegularExpressions.cs" />
+    <Compile Include="DataTypeExtensions\UI.cs" />
+    <Compile Include="Data\Cryptography.cs" />
+    <Compile Include="Data\Data.cs" />
+    <Compile Include="Data\SimpleJSON.cs" />
+    <Compile Include="DirectoryInfo.cs" />
+    <Compile Include="Info.cs" />
+    <Compile Include="IO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +80,10 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Net\" />
+    <Folder Include="UI\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

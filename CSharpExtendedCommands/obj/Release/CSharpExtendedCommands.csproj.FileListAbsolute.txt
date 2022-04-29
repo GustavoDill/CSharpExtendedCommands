@@ -50,3 +50,11 @@ C:\Users\gusta\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExt
 C:\Users\gusta\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
 C:\Users\gusta\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.dll
 C:\Users\gusta\Desktop\Programs\.Projects\Repos\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.pdb
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.AssemblyReference.cache
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\Interop.IWshRuntimeLibrary.dll
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.ResolveComReference.cache
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.csproj.CoreCompileInputs.cache
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.dll
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\obj\Release\CSharpExtendedCommands.pdb
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\bin\Release\CSharpExtendedCommands.dll
+C:\Users\Gustavo\Source\Repos\GustavoDill\CSharpExtendedCommands\CSharpExtendedCommands\bin\Release\CSharpExtendedCommands.pdb
