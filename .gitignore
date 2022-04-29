@@ -14,7 +14,10 @@
 *.userprefs
 
 # Build results
+CSharpExtendedCommands/bin
 FormApp/bin
+CSharpExtendedCommands/obj
+FormApp/obj
 .vs/
 [Dd]ebug/
 [Dd]ebugPublic/
