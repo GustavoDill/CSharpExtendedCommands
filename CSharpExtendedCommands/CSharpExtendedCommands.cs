@@ -13546,7 +13546,40 @@ namespace CSharpExtendedCommands
         {
             public static class CollectionsExtension
             {
+                /// <summary>
+                /// Pushes the indicated item at given index to the next index (+1)
+                /// </summary>
+                /// <typeparam name="T"></typeparam>
+                /// <returns></returns>
+                public static List<T> Push<T>(this List<T> obj, int index)
+                {
+                    if (index == obj.Count - 1) return obj;
+                    var oldItem = obj[index];
+                    var newItem = obj[index + 1];
+                    obj.RemoveAt(index);
+                    obj.RemoveAt(index);
+                    obj.Insert(index, newItem);
+                    obj.Insert(index + 1, oldItem);
+                    return obj;
 
+                }
+                /// <summary>
+                /// Pulls the indicated item at given index to the previous index (-1)
+                /// </summary>
+                /// <typeparam name="T"></typeparam>
+                /// <returns></returns>
+                public static List<T> Pull<T>(this List<T> obj, int index)
+                {
+                    if (index == 0) return obj;
+                    if (index == obj.Count - 1) return obj;
+                    var oldItem = obj[index];
+                    var newItem = obj[index - 1];
+                    obj.RemoveAt(index - 1);
+                    obj.RemoveAt(index - 1);
+                    obj.Insert(index - 1, oldItem);
+                    obj.Insert(index, newItem);
+                    return obj;
+                }
                 public static T[] Search<T>(this T[] obj, string search, string propname) => obj.Search(search, propname, false);
                 public static List<T> Search<T>(this List<T> obj, string search, string propname, bool caseSensitive) => obj.ToArray().Search(search, propname, caseSensitive).ToList();
                 public static List<T> Search<T>(this List<T> obj, string search, string propname) => obj.ToList().Search(search, propname, false);
