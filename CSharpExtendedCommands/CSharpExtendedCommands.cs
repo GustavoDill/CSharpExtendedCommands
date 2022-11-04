@@ -13701,6 +13701,7 @@ namespace CSharpExtendedCommands
             }
             #endregion
             #region GeneralClasses
+            public static bool Between(this int v, int start, int end) => v >= start && v <= end;
             public static bool IsOdd(this int v) => v % 2 != 0;
             public static bool ToBool(this string v) => Regex.IsMatch(v, "([tT][rR][uU][eE]|1)");
             public static object ToObject<T>(this T obj) => (object)obj;
